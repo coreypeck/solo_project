@@ -1,0 +1,7 @@
+CREATE TABLE favoritepets (
+id serial PRIMARY KEY,
+petid int,
+petname varchar(35),
+petimg varchar(75),
+petdescription varchar(100)
+);

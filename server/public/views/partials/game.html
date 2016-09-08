@@ -1,0 +1,55 @@
+<body>
+    <div class="container-fluid text-center">
+        <div class="row content">
+            <div class="col-sm-2">
+                <div id="action_home">
+                    <h1>Actions</h1>
+                    <ul>
+                        <li>
+                            Pause
+                        </li>
+                        <li>
+                            Log Off
+                        </li>
+                        <li>
+                            Vote New Host
+                        </li>
+                        <li>
+                            Text: Go/Leave
+                        </li>
+                    </ul>
+                </div>
+                <div id="town_home">
+                    <p>
+                        <!-- Town: {{town.name}} -->
+                        Town Name:
+                    </p>
+                    <p ng-repeat="building in buildings">
+                        <!-- {{building}} -->
+                        Building Name:
+                    </p>
+                </div>
+            </div>
+            <div class="col-sm-10 text-left">
+                <h1>Game Events</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row content">
+        <div class="col-sm-2"></div>
+        <div class="col-sm-8">
+            <p ng-repeat="message in chatHistory">
+                {{message}}
+            </p>
+        </div>
+        <div class="col-sm-2"></div>
+
+    </div>
+    <div>
+        <ul id="messages"></ul>
+        <form action="">
+            <input ng-model="chatText" autocomplete="off" /><button ng-click="postChat()">Send</button>
+        </form>
+    </div>
+</body>
