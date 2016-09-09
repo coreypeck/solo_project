@@ -30,21 +30,21 @@
                     </p>
                 </div>
             </div>
-            <div class="col-sm-10 text-left">
+            <div class="col-sm-10 text-center">
                 <h1>Game Events</h1>
+                <button ng-click="getEvent()">Get Event</button>
+                <div id="eventHome">
+                    <p ng-repeat="event in eventHistory track by $index">
+                        {{event}}
+                    </p>
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="row content">
-        <div class="col-sm-2"></div>
-        <div class="col-sm-8">
-            <p ng-repeat="message in chatHistory">
-                {{message}}
-            </p>
-        </div>
-        <div class="col-sm-2"></div>
-
+    <div>
+        <p ng-repeat="message in chatHistory track by $index">
+            {{message}}
+        </p>
     </div>
     <div>
         <ul id="messages"></ul>
