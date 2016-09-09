@@ -21,4 +21,8 @@ router.randomnumber20 = function(){
   number = Math.floor(Math.random() * (1 + 20 - 1) + 1);
   return number;
 }
+router.randomnumber100 = function(){
+  number = Math.floor(Math.random() * (1 + 100 - 1) + 1);
+  return number;
+}
 module.exports = router;

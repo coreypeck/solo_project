@@ -46,6 +46,120 @@ router.get('/', function(req, res) {
 
     });
 });
+router.get('/town', function(req, res) {
+    pg.connect(connectionString, function(err, client, done) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        randomNumber = rn.randomnumber4();
+        console.log(randomNumber);
+        client.query("SELECT * FROM town_size WHERE town_size.id = " + randomNumber,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+
+    });
+});
+router.get('/buildings', function(req, res) {
+    console.log("Ajax request at buildings");
+    pg.connect(connectionString, function(err, client, done) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        randomNumber = rn.randomnumber20();
+        console.log(randomNumber);
+        client.query("SELECT * FROM town_buildings WHERE town_buildings.id = " + randomNumber,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+
+    });
+});
+router.get('/members', function(req, res) {
+    pg.connect(connectionString, function(err, client, done) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        randomNumber = rn.randomnumber4();
+        console.log(randomNumber);
+        client.query("SELECT * FROM family_members WHERE family_members.id = " + randomNumber,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+
+    });
+});
+router.get('/emotion', function(req, res) {
+    pg.connect(connectionString, function(err, client, done) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        randomNumber = rn.randomnumber100();
+        console.log(randomNumber);
+        client.query("SELECT * FROM emotions WHERE emotions.id = " + randomNumber,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+
+    });
+});
+router.get('/d/:id', function(req, res) {
+  console.log("/d/:id");
+    var id = req.params.id;
+    console.log("/d/:id = ", id);
+    var randomNumber = 0;
+    switch (id) {
+        case 'four':
+            randomNumber = rn.randomnumber4();
+            break;
+        case 'six':
+            randomNumber = rn.randomnumber6();
+            break;
+        case 'eight':
+            randomNumber = rn.randomnumber8();
+            break;
+        case 'ten':
+            randomNumber = rn.randomnumber10();
+            break;
+        case 'twenty':
+            randomNumber = rn.randomnumber20();
+            break;
+        case 'hundred':
+            randomNumber = rn.randomnumber100();
+            break;
+        default:
+            randomNumber = rn.randomnumber4();
+    }
+    res.send(randomNumber.toString());
+});
 router.get('/:id', function(req, res) {
     var id = req.params.id;
     console.log("the Id", id);
@@ -74,7 +188,7 @@ router.get('/:id', function(req, res) {
             tableName = "wants_to_fight";
             break;
         default:
-            tableName = "murderer";
+            tableName = "murdered";
     };
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
