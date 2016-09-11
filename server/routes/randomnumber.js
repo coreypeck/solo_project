@@ -1,6 +1,9 @@
 var express = require("express");
 var router = express.Router();
 var number = 0;
+
+//these function like Die Rolls for the Integrity of the game
+
 router.randomnumber4 = function(){
   number = Math.floor(Math.random() * (1 + 4 - 1) + 1);
   return number;
@@ -23,6 +26,10 @@ router.randomnumber20 = function(){
 }
 router.randomnumber100 = function(){
   number = Math.floor(Math.random() * (1 + 100 - 1) + 1);
+  return number;
+}
+router.randomnumberunknown = function(number){
+  number = Math.floor(Math.random() * (1 + number - 1) + 1);
   return number;
 }
 module.exports = router;

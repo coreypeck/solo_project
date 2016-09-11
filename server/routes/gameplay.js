@@ -46,6 +46,9 @@ router.get('/', function(req, res) {
 
     });
 });
+
+//Gets the size of the town (Essentially, the number of buildings)
+
 router.get('/town', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
@@ -67,6 +70,9 @@ router.get('/town', function(req, res) {
 
     });
 });
+
+//Grabs my town buildings!
+
 router.get('/buildings', function(req, res) {
     console.log("Ajax request at buildings");
     pg.connect(connectionString, function(err, client, done) {
@@ -89,6 +95,9 @@ router.get('/buildings', function(req, res) {
 
     });
 });
+
+//think as in: Family Member
+
 router.get('/members', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
@@ -110,7 +119,10 @@ router.get('/members', function(req, res) {
 
     });
 });
-router.get('/emotion', function(req, res) {
+
+//This is where emotions come from
+
+router.get('/emotions', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
             console.log(err);
@@ -131,9 +143,23 @@ router.get('/emotion', function(req, res) {
 
     });
 });
+
+//d for Dice!
+
 router.get('/d/:id', function(req, res) {
   console.log("/d/:id");
     var id = req.params.id;
+    var randomNumber = 0;
+    var unknownCheck = id.substring(0,7);
+    console.log(unknownCheck);
+    if(unknownCheck == "unknown"){
+      var unknownNumber = id.substring(7,8);
+
+      //This is my call for a random number. The others act like dice,
+      //but this will get you a number from one to...whatever you requested
+
+      randomNumber = rn.randomnumberunknown(unknownNumber);
+    }
     console.log("/d/:id = ", id);
     var randomNumber = 0;
     switch (id) {
@@ -160,6 +186,9 @@ router.get('/d/:id', function(req, res) {
     }
     res.send(randomNumber.toString());
 });
+
+//this is at the bottom so it doesn't accidently eat another request
+
 router.get('/:id', function(req, res) {
     var id = req.params.id;
     console.log("the Id", id);

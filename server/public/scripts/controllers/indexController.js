@@ -8,15 +8,14 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
     $scope.gameInput = '';
     $scope.chatHistory = [];
     $scope.eventHistory = [];
-    $scope.eventObject = {};
-    $scope.familyMembers = [];
+    $scope.eventObject = {"event": "", "description": ""};
     $scope.FamilyFactory = FamilyFactory;
     var inBuilding = {
         inside: false,
         buildingName: ""
     }
 
-//initial town generation
+    //initial town generation
 
     getTown();
 
@@ -77,61 +76,11 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     //This does an Ajax request to grab the Event name
 
-    $scope.getEvent = function() {
-        $http({
-            method: "GET",
-            url: '/gameplay',
-        }).then(function(response) {
-            console.log("Get Success");
-            $scope.eventObject = {};
-            $scope.eventObject.event = response.data[0].description;
-            getDescription();
-        }, function() {
-            console.log("Get Error");
-        });
-    }
-
-    //Using the event name, we make another Ajax call to get the event description
-
-    function getDescription() {
-        oneEvent = $scope.eventObject.event
-        oneEvent = oneEvent.toLowerCase();
-
-        //I used oneEvent to try to make the URL calls more dynamic
-
-        console.log('/gameplay/' + oneEvent);
-        $http({
-            method: "GET",
-            url: '/gameplay/' + oneEvent,
-        }).then(function(response) {
-            console.log("Get Success");
-            $scope.eventObject.description = response.data[0].description;
-
-            console.log($scope.eventObject);
-            console.log($scope.eventObject.event);
-            console.log($scope.eventObject.description);
-
-            //this is where I'm having the issue. Usually, the above three console logs give me data
-            //$scope.eventObject comes out as:
-            //Object{event: "Robbed", description:"Small"}
-            //Event and description read as Robbed and Small respectively
-
-            $scope.eventHistory.push($scope.eventObject);
-
-            //If for some reason the push doesn't work, the while loop will run until it is pushed
-
-            while($scope.eventHistory[$scope.eventHistory.length-1] != $scope.eventObject){
-              $scope.eventHistory.push($scope.eventObject);
-            }
-            console.log($scope.eventHistory);
-            updateScroll('event_home');
-        }, function() {
-            console.log("Get Error");
-        });
-    }
-
     function getBuildings(buildingNumber) {
         $scope.buildings = [];
+
+        //I did this for consistency. So even the first iteration of a building has a number
+
         var repeats = 1;
         for (var i = 0; i < buildingNumber; i++) {
             console.log("I'm Running in the For Loop");
@@ -140,6 +89,9 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
                 url: '/gameplay/buildings'
             }).then(function(buildingName) {
                 var bName = buildingName.data[0].description;
+
+                //This renames the building if another of its kind exists
+
                 $scope.buildings.forEach(function(building) {
                     if (bName == building || bName == building.substring(0, building.length - 2) || bName == building.substring(0, building.length - 3)) {
                         repeats++;
@@ -154,10 +106,19 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
             });
         }
     }
+
+    //Checks to see if what was entered was a command
+
     $scope.checkCommand = function() {
+
+      //These will always evaluate to go or leave if the first thing they put is was go or leave
+
         var checkGo = $scope.gameInput.substring(0, 2);
         var checkLeave = $scope.gameInput.substring(0, 5);
         if (checkGo.toLowerCase() == 'go') {
+
+          //Players can't go somewhere else if they haven't left yet
+
             if (inBuilding.inside == true) {
                 console.log("You have to leave the building you are in first");
             } else {
@@ -165,15 +126,20 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
                 checkBuilding($scope.gameInput.substring(3, $scope.gameInput.length));
             }
         } else if (checkLeave.toLowerCase() == 'leave') {
-            console.log("You typed in leave. The next step is to check the building!");
+            console.log("You typed in leave. Cya!");
             leaveBuilding()
         } else {
             console.log("Quit typing in nonsense ya Goof!");
         }
     }
 
+    //Since we know a command keyword was entered, we need to check if the building is valid as well
+
     function checkBuilding(userBuilding) {
         var unvisitedArray = [];
+
+        //Since go and go next town both start with go, I needed to check for next town BEFORE I checked the building
+
         if(userBuilding.toLowerCase() == "next town"){
           $scope.eventObject.event = "Now leaving: ";
           // $scope.eventObject.description = town.townName;
@@ -185,9 +151,12 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         }
         else {
           $scope.buildings.forEach(function(building, index) {
+
+            //This checks for a matching building in toLowerCase so the user doesn't have to worry about the case
+
               if (userBuilding.toLowerCase() == building.toLowerCase()) {
                   console.log("We got a match!");
-                  $scope.eventObject = {};
+                  $scope.eventObject = {"event": "", "description": ""};
                   inBuilding.inside = true;
                   inBuilding.buildingName = building;
                   $scope.eventObject.event = "You have entered";
@@ -195,7 +164,6 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
                   $scope.eventHistory.push($scope.eventObject);
                   resetVariables();
                   getFamilyMembers();
-                  $scope.getEvent();
               } else {
                   unvisitedArray.push(building)
               }
@@ -204,9 +172,12 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         }
     }
 
+
+    //this function is called when the user types in leave
+
     function leaveBuilding() {
         inBuilding.inside = false;
-        $scope.eventObject = {};
+        $scope.eventObject = {"event": "", "description": ""};
         $scope.eventObject.event = "You have left";
         $scope.eventObject.description = inBuilding.buildingName;
         $scope.eventHistory.push($scope.eventObject);
@@ -214,13 +185,21 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         updateScroll('event_home');
     }
 
+    //I use this as an easy way to reset key variables
+
     function resetVariables() {
         $scope.gameInput = '';
-        $scope.eventObject = {};
+        $scope.eventObject = {"event": "", "description": ""};
         inBuilding.buildingName = "";
     }
 
+    //this is run to get the amount of faimly members and who they are
+
     function getFamilyMembers() {
+      $scope.fullFamilyDetails = [];
+
+      //I decided to use the word as I don't have to worry about converting to a string and back to a usable number
+
         $scope.familyDice = "eight";
         $scope.FamilyFactory.getNumber($scope.familyDice).then(function() {
             $scope.FamilyFactory.getMembers().then(function() {
@@ -230,24 +209,14 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         });
     }
 
-
-    function getEmotionalModifier() {
-        $http({
-            method: "GET",
-            url: '/gameplay/emotion',
-        }).then(function(response) {
-            console.log("Get Success");
-            console.log("Emotion!", response.data);
-        }, function() {
-            console.log("Get Error");
-        });
-    }
-
     function whoIsInside(familyMembers) {
         console.log(familyMembers);
         $scope.eventObject.event = "There are/is ";
         $scope.eventObject.description = (familyMembers.length + " people inside");
         $scope.eventHistory.push($scope.eventObject);
+
+        //The code would randomly push a second eventObject, so I had this in place to make sure it didn't get away with it
+
         if($scope.eventHistory[$scope.eventHistory.length-2] == $scope.eventHistory[$scope.eventHistory.length-1]){
           console.log("Deleted the duplicate");
           $scope.eventHistory.pop();
@@ -256,6 +225,8 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         resetVariables();
         detailedWhoIsInside(familyMembers);
     }
+
+    //gets the count of how many of ezch family member type
 
     function detailedWhoIsInside(familyMembers) {
         console.log("detailedWhoIsInside is Called");
@@ -266,7 +237,7 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
             Sister: 0
         };
         familyMembers.forEach(function(familyMember) {
-            switch (familyMember) {
+            switch (familyMember.description) {
                 case "Mother":
                     familyObject.Mother++;
                     break;
@@ -286,6 +257,43 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         $scope.eventObject.event = "There are:";
         $scope.eventObject.description = familyObject.Brother + " Brother(s), " + familyObject.Sister + " Sister(s), " + familyObject.Mother + " Mother(s) and " + familyObject.Father + " Father(s)";
         $scope.eventHistory.push($scope.eventObject);
+        $scope.getEvent(familyMembers);
         resetVariables();
+    }
+
+    //Gets the event
+
+    $scope.getEvent = function(familyMembers) {
+        $scope.FamilyFactory.getEvent().then(function(){
+          $scope.FamilyFactory.getDescription().then(function(){
+            var array = $scope.eventHistory
+            var ajaxArray = $scope.FamilyFactory.grabHistory();
+            array.push(ajaxArray[0]);
+            $scope.FamilyFactory.getEmotion().then(function(){
+              var emotion = $scope.FamilyFactory.grabEmotion();
+              console.log(emotion);
+              makeDialogue(emotion, familyMembers);
+            });
+            updateScroll('event_home');
+          });
+      });
+    }
+
+    //Using the family we have generated and the event that has occured, we can now make cohesive sentences!
+
+    function makeDialogue(emotion, familyMembers){
+      console.log(familyMembers);
+      var number = familyMembers.length;
+      number = number.toString();
+      console.log(number);
+      $scope.FamilyFactory.getNumber("unknown" + number).then(function(){
+        var randomFamilyMember = $scope.FamilyFactory.grabNumber();
+        console.log("randomFamilyMember", randomFamilyMember);
+        var ranFamMem = familyMembers[randomFamilyMember];
+        console.log(ranFamMem);
+        $scope.eventObject.event = "A " + ranFamMem.age_sex_name + " approaches You. ";
+        $scope.eventObject.description = ranFamMem.gender + " looks " + emotion;
+        $scope.eventHistory.push($scope.eventObject);
+      });
     }
 }]);
