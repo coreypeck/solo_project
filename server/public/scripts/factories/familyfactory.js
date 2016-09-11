@@ -5,12 +5,63 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     //Setting necessary variables
     var familyNumber = undefined;
     var familyMembers = [];
-    var eventObject = {
+    var eventHistory = [];
+    var emotion = "";
+    var questPrompt = {
         "event": "",
         "description": ""
     };
-    var eventHistory = [];
-    var emotion = "";
+    var stand_in = "";
+
+    var questPromptEvent = function() {
+      eventHistory = [];
+      console.log(stand_in);
+      var additionalText = "";
+      var relativeInNeed = "";
+      var secondaryRelative = "";
+      if(stand_in == "wants_to_fight"){
+        additionalText = "I ";
+      }else{
+        additionalText = "My ";
+        familyNumber = 1;
+        numberOfMembers().then(function(){
+          console.log(familyMembers);
+          relativeInNeed = familyMembers[0].description;
+          console.log(relativeInNeed);
+        });
+      }
+      var promise = $http({
+          method: "GET",
+          url: '/gameplay/firstevent/' + stand_in,
+      }).then(function(response) {
+          console.log("Get Success");
+          var questString = additionalText + relativeInNeed + response.data[0].description;
+          console.log(questString);
+          questPrompt.event = questString;
+          console.log(stand_in);
+          // questPromptDescription(loweredEvent);
+      }, function() {
+          console.log("Get Error");
+      });
+      return promise;
+    };
+
+    var questPromptDescription = function() {
+      console.log("stand_in", stand_in);
+      var promise = $http({
+          method: "GET",
+          url: '/gameplay/secondevent/' + stand_in,
+      }).then(function(response) {
+          console.log("Get Success");
+          console.log(response);
+          questPrompt.description = response.data[0].description;
+          console.log(questPrompt);
+          eventHistory.push(questPrompt);
+      }, function() {
+          console.log("Get Error");
+      });
+      return promise;
+    };
 
     //this is my number getter. The 'd' stand for Die or Dice
 
@@ -22,9 +73,7 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
             url: '/gameplay/d/' + number,
         }).then(function(response) {
             console.log("Get Success");
-            console.log(parseInt(response.data));
             familyNumber = parseInt(response.data);
-            console.log(familyNumber);
         }, function() {
             console.log("Get Error");
         });
@@ -35,7 +84,6 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
 
     var numberOfMembers = function() {
         familyMembers = [];
-        console.log("numberOfMembers Running");
         for (var i = 0; i < familyNumber; i++) {
             var promise = $http({
                 method: "GET",
@@ -57,7 +105,6 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
             "event": "",
             "description": ""
         };
-        console.log("getEvent is running");
         var promise = $http({
             method: "GET",
             url: '/gameplay',
@@ -67,38 +114,8 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
                 "event": "",
                 "description": ""
             };
-            eventObject.event = response.data[0].description;
-            console.log(eventObject.event);
-        }, function() {
-            console.log("Get Error");
-        });
-        return promise;
-    }
-
-    //Helps to further define the event
-
-    var getDescription = function() {
-        eventHistory = [];
-        oneEvent = eventObject.event
-        loweredEvent = oneEvent.toLowerCase();
-
-        console.log('/gameplay/' + loweredEvent);
-        var promise = $http({
-            method: "GET",
-            url: '/gameplay/' + loweredEvent,
-        }).then(function(response) {
-
-          //I wound up using standin variables because the .push()
-          //wouldn't consistently read myeventObject correctly.
-          //I believe I somehow created a second variable of eventObject
-          //but I couldn't find it. So I went with this route!
-
-            console.log("Get Success");
-            eventObject.description = response.data[0].description;
-            eventObject.event = oneEvent;
-            var standin = eventObject;
-            console.log(standin);
-            eventHistory.push(standin);
+            stand_in = response.data[0].description.toLowerCase();
+            console.log(stand_in);
         }, function() {
             console.log("Get Error");
         });
@@ -107,19 +124,19 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
 
     //Everyone needs emotions! It's a key part of Story telling!
 
-    var getEmotion = function(){
-      console.log("getEmotion is running");
+    var getEmotion = function() {
       emotion = "";
-      var promise = $http({
-          method: "GET",
-          url: '/gameplay/emotions',
-      }).then(function(response) {
-          console.log("Get Success");
-          emotion = response.data[0].emotion;
-      }, function() {
-          console.log("Get Error");
-      });
-      return promise;
+        var promise = $http({
+            method: "GET",
+            url: '/gameplay/emotions',
+        }).then(function(response) {
+            console.log("Get Success");
+            console.log(response);
+            emotion = response.data[0].emotion;
+        }, function() {
+            console.log("Get Error");
+        });
+        return promise;
     }
 
 
@@ -143,15 +160,21 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         grabHistory: function() {
             return eventHistory;
         },
-        getDescription: function() {
-            return getDescription();
-        },
-        getEmotion: function(){
+        getEmotion: function() {
             return getEmotion();
         },
-        grabEmotion: function(){
-          return emotion;
+        grabEmotion: function() {
+            return emotion;
+        },
+        questPromptEvent: function() {
+            return questPromptEvent();
+        },
+        questPromptDescription: function() {
+            return questPromptDescription();
         }
+        // grabQuest: function(){
+        //   return questPrompt;
+        // }
     };
 
 }]);

@@ -1,4 +1,3 @@
-
 myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", function($scope, $http, FamilyFactory) {
 
     //Socket io is used for my chat interface
@@ -8,7 +7,10 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
     $scope.gameInput = '';
     $scope.chatHistory = [];
     $scope.eventHistory = [];
-    $scope.eventObject = {"event": "", "description": ""};
+    $scope.eventObject = {
+        "event": "",
+        "description": ""
+    };
     $scope.FamilyFactory = FamilyFactory;
     var inBuilding = {
         inside: false,
@@ -45,7 +47,6 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
             url: '/gameplay/town',
         }).then(function(response) {
             console.log("Get Success");
-            console.log(response.data[0].building_type);
 
             //I did a switch for spacial optimization
 
@@ -83,7 +84,6 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
         var repeats = 1;
         for (var i = 0; i < buildingNumber; i++) {
-            console.log("I'm Running in the For Loop");
             $http({
                 method: "GET",
                 url: '/gameplay/buildings'
@@ -111,13 +111,13 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     $scope.checkCommand = function() {
 
-      //These will always evaluate to go or leave if the first thing they put is was go or leave
+        //These will always evaluate to go or leave if the first thing they put is was go or leave
 
         var checkGo = $scope.gameInput.substring(0, 2);
         var checkLeave = $scope.gameInput.substring(0, 5);
         if (checkGo.toLowerCase() == 'go') {
 
-          //Players can't go somewhere else if they haven't left yet
+            //Players can't go somewhere else if they haven't left yet
 
             if (inBuilding.inside == true) {
                 console.log("You have to leave the building you are in first");
@@ -140,35 +140,37 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
         //Since go and go next town both start with go, I needed to check for next town BEFORE I checked the building
 
-        if(userBuilding.toLowerCase() == "next town"){
-          $scope.eventObject.event = "Now leaving: ";
-          // $scope.eventObject.description = town.townName;
-          $scope.eventObject.description = 'town';
-          $scope.eventHistory.push($scope.eventObject);
-          $scope.buildings = [];
-          getTown();
-          $scope.gameInput = '';
-        }
-        else {
-          $scope.buildings.forEach(function(building, index) {
+        if (userBuilding.toLowerCase() == "next town") {
+            $scope.eventObject.event = "Now leaving: ";
+            // $scope.eventObject.description = town.townName;
+            $scope.eventObject.description = 'town';
+            $scope.eventHistory.push($scope.eventObject);
+            $scope.buildings = [];
+            getTown();
+            $scope.gameInput = '';
+        } else {
+            $scope.buildings.forEach(function(building, index) {
 
-            //This checks for a matching building in toLowerCase so the user doesn't have to worry about the case
+                //This checks for a matching building in toLowerCase so the user doesn't have to worry about the case
 
-              if (userBuilding.toLowerCase() == building.toLowerCase()) {
-                  console.log("We got a match!");
-                  $scope.eventObject = {"event": "", "description": ""};
-                  inBuilding.inside = true;
-                  inBuilding.buildingName = building;
-                  $scope.eventObject.event = "You have entered";
-                  $scope.eventObject.description = inBuilding.buildingName;
-                  $scope.eventHistory.push($scope.eventObject);
-                  resetVariables();
-                  getFamilyMembers();
-              } else {
-                  unvisitedArray.push(building)
-              }
-          });
-          $scope.buildings = unvisitedArray;
+                if (userBuilding.toLowerCase() == building.toLowerCase()) {
+                    console.log("We got a match!");
+                    $scope.eventObject = {
+                        "event": "",
+                        "description": ""
+                    };
+                    inBuilding.inside = true;
+                    inBuilding.buildingName = building;
+                    $scope.eventObject.event = "You have entered";
+                    $scope.eventObject.description = inBuilding.buildingName;
+                    $scope.eventHistory.push($scope.eventObject);
+                    resetVariables();
+                    getFamilyMembers();
+                } else {
+                    unvisitedArray.push(building)
+                }
+            });
+            $scope.buildings = unvisitedArray;
         }
     }
 
@@ -177,7 +179,10 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     function leaveBuilding() {
         inBuilding.inside = false;
-        $scope.eventObject = {"event": "", "description": ""};
+        $scope.eventObject = {
+            "event": "",
+            "description": ""
+        };
         $scope.eventObject.event = "You have left";
         $scope.eventObject.description = inBuilding.buildingName;
         $scope.eventHistory.push($scope.eventObject);
@@ -189,16 +194,19 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     function resetVariables() {
         $scope.gameInput = '';
-        $scope.eventObject = {"event": "", "description": ""};
+        $scope.eventObject = {
+            "event": "",
+            "description": ""
+        };
         inBuilding.buildingName = "";
     }
 
     //this is run to get the amount of faimly members and who they are
 
     function getFamilyMembers() {
-      $scope.fullFamilyDetails = [];
+        $scope.fullFamilyDetails = [];
 
-      //I decided to use the word as I don't have to worry about converting to a string and back to a usable number
+        //I decided to use the word as I don't have to worry about converting to a string and back to a usable number
 
         $scope.familyDice = "eight";
         $scope.FamilyFactory.getNumber($scope.familyDice).then(function() {
@@ -210,18 +218,16 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
     }
 
     function whoIsInside(familyMembers) {
-        console.log(familyMembers);
-        $scope.eventObject.event = "There are/is ";
+        $scope.eventObject.event = "You see ";
         $scope.eventObject.description = (familyMembers.length + " people inside");
         $scope.eventHistory.push($scope.eventObject);
 
         //The code would randomly push a second eventObject, so I had this in place to make sure it didn't get away with it
 
-        if($scope.eventHistory[$scope.eventHistory.length-2] == $scope.eventHistory[$scope.eventHistory.length-1]){
-          console.log("Deleted the duplicate");
-          $scope.eventHistory.pop();
+        if ($scope.eventHistory[$scope.eventHistory.length - 2] == $scope.eventHistory[$scope.eventHistory.length - 1]) {
+            console.log("Deleted the duplicate");
+            $scope.eventHistory.pop();
         }
-        console.log($scope.eventHistory);
         resetVariables();
         detailedWhoIsInside(familyMembers);
     }
@@ -229,7 +235,6 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
     //gets the count of how many of ezch family member type
 
     function detailedWhoIsInside(familyMembers) {
-        console.log("detailedWhoIsInside is Called");
         var familyObject = {
             Mother: 0,
             Father: 0,
@@ -254,46 +259,50 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
                     familyObject.Mother++;
             };
         });
-        $scope.eventObject.event = "There are:";
+        $scope.eventObject.event = "It looks like:";
         $scope.eventObject.description = familyObject.Brother + " Brother(s), " + familyObject.Sister + " Sister(s), " + familyObject.Mother + " Mother(s) and " + familyObject.Father + " Father(s)";
         $scope.eventHistory.push($scope.eventObject);
-        $scope.getEvent(familyMembers);
+        getEmotions(familyMembers);
         resetVariables();
+    }
+
+    function getEmotions(familyMembers) {
+        $scope.FamilyFactory.getEmotion().then(function() {
+            var emotion = $scope.FamilyFactory.grabEmotion();
+            makeDialogue(emotion, familyMembers);
+        });
+    }
+
+    //Using the family we have generated and the event that has occured, we can now make cohesive sentences!
+
+    function makeDialogue(emotion, familyMembers) {
+        var number = familyMembers.length;
+        number = number.toString();
+        $scope.FamilyFactory.getNumber("unknown" + number).then(function() {
+            var randomFamilyMember = $scope.FamilyFactory.grabNumber();
+            var ranFamMem = familyMembers[(randomFamilyMember - 1)];
+            $scope.eventObject.event = "A " + ranFamMem.age_sex_name + " approaches You. ";
+            $scope.eventObject.description = ranFamMem.gender + " looks " + emotion;
+            $scope.eventHistory.push($scope.eventObject);
+            $scope.getEvent(familyMembers);
+        });
     }
 
     //Gets the event
 
     $scope.getEvent = function(familyMembers) {
-        $scope.FamilyFactory.getEvent().then(function(){
-          $scope.FamilyFactory.getDescription().then(function(){
-            var array = $scope.eventHistory
-            var ajaxArray = $scope.FamilyFactory.grabHistory();
-            array.push(ajaxArray[0]);
-            $scope.FamilyFactory.getEmotion().then(function(){
-              var emotion = $scope.FamilyFactory.grabEmotion();
-              console.log(emotion);
-              makeDialogue(emotion, familyMembers);
+      var array = $scope.eventHistory;
+      var ajaxArray = [];
+        $scope.FamilyFactory.getEvent().then(function() {
+            $scope.FamilyFactory.questPromptEvent().then(function() {
+                $scope.FamilyFactory.questPromptDescription().then(function() {
+                    ajaxArray = $scope.FamilyFactory.grabHistory();
+                    console.log(array);
+                    array.push(ajaxArray[0]);
+                    console.log(array);
+                    updateScroll('event_home');
+                });
             });
-            updateScroll('event_home');
-          });
-      });
-    }
-
-    //Using the family we have generated and the event that has occured, we can now make cohesive sentences!
-
-    function makeDialogue(emotion, familyMembers){
-      console.log(familyMembers);
-      var number = familyMembers.length;
-      number = number.toString();
-      console.log(number);
-      $scope.FamilyFactory.getNumber("unknown" + number).then(function(){
-        var randomFamilyMember = $scope.FamilyFactory.grabNumber();
-        console.log("randomFamilyMember", randomFamilyMember);
-        var ranFamMem = familyMembers[randomFamilyMember];
-        console.log(ranFamMem);
-        $scope.eventObject.event = "A " + ranFamMem.age_sex_name + " approaches You. ";
-        $scope.eventObject.description = ranFamMem.gender + " looks " + emotion;
-        $scope.eventHistory.push($scope.eventObject);
-      });
+        });
     }
 }]);
