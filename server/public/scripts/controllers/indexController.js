@@ -1,5 +1,8 @@
 
 myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", function($scope, $http, FamilyFactory) {
+
+    //Socket io is used for my chat interface
+
     var socket = io();
     $scope.chatText = '';
     $scope.gameInput = '';
@@ -12,7 +15,13 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         inside: false,
         buildingName: ""
     }
+
+//initial town generation
+
     getTown();
+
+    //The function that shows my local chat
+
     $scope.postChat = function() {
         socket.emit('chat message', $scope.chatText);
         $scope.chatHistory.push($scope.chatText);
@@ -21,10 +30,14 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         return false;
     }
 
+    //This will bring focus to the bottom of a given ID...usually
+
     function updateScroll(id) {
         var element = document.getElementById(id);
         element.scrollTop = element.scrollHeight;
     }
+
+    //the ajax for my town
 
     function getTown() {
         var buildingNumber = 0;
@@ -34,6 +47,9 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         }).then(function(response) {
             console.log("Get Success");
             console.log(response.data[0].building_type);
+
+            //I did a switch for spacial optimization
+
             switch (response.data[0].building_type) {
                 case "Caravan":
                     buildingNumber = 5;
@@ -50,12 +66,16 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
                 default:
                     buildingNumber = 5;
             }
-            console.log(buildingNumber);
+
+            //This will tell us how many buildings to grab
+
             getBuildings(buildingNumber);
         }, function() {
             console.log("Get Error");
         });
     }
+
+    //This does an Ajax request to grab the Event name
 
     $scope.getEvent = function() {
         $http({
@@ -71,9 +91,14 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         });
     }
 
+    //Using the event name, we make another Ajax call to get the event description
+
     function getDescription() {
         oneEvent = $scope.eventObject.event
         oneEvent = oneEvent.toLowerCase();
+
+        //I used oneEvent to try to make the URL calls more dynamic
+
         console.log('/gameplay/' + oneEvent);
         $http({
             method: "GET",
@@ -86,7 +111,14 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
             console.log($scope.eventObject.event);
             console.log($scope.eventObject.description);
 
+            //this is where I'm having the issue. Usually, the above three console logs give me data
+            //$scope.eventObject comes out as:
+            //Object{event: "Robbed", description:"Small"}
+            //Event and description read as Robbed and Small respectively
+
             $scope.eventHistory.push($scope.eventObject);
+
+            //If for some reason the push doesn't work, the while loop will run until it is pushed
 
             while($scope.eventHistory[$scope.eventHistory.length-1] != $scope.eventObject){
               $scope.eventHistory.push($scope.eventObject);
