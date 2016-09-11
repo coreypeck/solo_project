@@ -1,6 +1,5 @@
-//The Object array is what I use to populate my dropdown and, later, use to define my URL
 
-myApp.controller("indexController", ["$scope", "$http", function($scope, $http) {
+myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", function($scope, $http, FamilyFactory) {
     var socket = io();
     $scope.chatText = '';
     $scope.gameInput = '';
@@ -8,6 +7,7 @@ myApp.controller("indexController", ["$scope", "$http", function($scope, $http) 
     $scope.eventHistory = [];
     $scope.eventObject = {};
     $scope.familyMembers = [];
+    $scope.FamilyFactory = FamilyFactory;
     var inBuilding = {
         inside: false,
         buildingName: ""
@@ -65,7 +65,7 @@ myApp.controller("indexController", ["$scope", "$http", function($scope, $http) 
             console.log("Get Success");
             $scope.eventObject = {};
             $scope.eventObject.event = response.data[0].description;
-            getDescription()
+            getDescription();
         }, function() {
             console.log("Get Error");
         });
@@ -73,9 +73,7 @@ myApp.controller("indexController", ["$scope", "$http", function($scope, $http) 
 
     function getDescription() {
         oneEvent = $scope.eventObject.event
-        console.log(oneEvent);
         oneEvent = oneEvent.toLowerCase();
-        console.log(oneEvent);
         console.log('/gameplay/' + oneEvent);
         $http({
             method: "GET",
@@ -83,8 +81,17 @@ myApp.controller("indexController", ["$scope", "$http", function($scope, $http) 
         }).then(function(response) {
             console.log("Get Success");
             $scope.eventObject.description = response.data[0].description;
+
             console.log($scope.eventObject);
+            console.log($scope.eventObject.event);
+            console.log($scope.eventObject.description);
+
             $scope.eventHistory.push($scope.eventObject);
+
+            while($scope.eventHistory[$scope.eventHistory.length-1] != $scope.eventObject){
+              $scope.eventHistory.push($scope.eventObject);
+            }
+            console.log($scope.eventHistory);
             updateScroll('event_home');
         }, function() {
             console.log("Get Error");
@@ -119,7 +126,7 @@ myApp.controller("indexController", ["$scope", "$http", function($scope, $http) 
         var checkGo = $scope.gameInput.substring(0, 2);
         var checkLeave = $scope.gameInput.substring(0, 5);
         if (checkGo.toLowerCase() == 'go') {
-            if (inBuilding == true) {
+            if (inBuilding.inside == true) {
                 console.log("You have to leave the building you are in first");
             } else {
                 console.log("You typed in go. The next step is to check the building!");
@@ -135,24 +142,34 @@ myApp.controller("indexController", ["$scope", "$http", function($scope, $http) 
 
     function checkBuilding(userBuilding) {
         var unvisitedArray = [];
-        $scope.buildings.forEach(function(building, index) {
-            if (userBuilding.toLowerCase() == building.toLowerCase()) {
-                console.log("We got a match!");
-                $scope.eventObject = {};
-                inBuilding.inside = true;
-                inBuilding.buildingName = building;
-                $scope.eventObject.event = "You have entered";
-                $scope.eventObject.description = inBuilding.buildingName;
-                $scope.eventHistory.push($scope.eventObject);
-                resetVariables();
-                getFamilyMembers();
-                $scope.getEvent();
-            } else {
-                console.log("These buildings don't match");
-                unvisitedArray.push(building)
-            }
-        });
-        $scope.buildings = unvisitedArray;
+        if(userBuilding.toLowerCase() == "next town"){
+          $scope.eventObject.event = "Now leaving: ";
+          // $scope.eventObject.description = town.townName;
+          $scope.eventObject.description = 'town';
+          $scope.eventHistory.push($scope.eventObject);
+          $scope.buildings = [];
+          getTown();
+          $scope.gameInput = '';
+        }
+        else {
+          $scope.buildings.forEach(function(building, index) {
+              if (userBuilding.toLowerCase() == building.toLowerCase()) {
+                  console.log("We got a match!");
+                  $scope.eventObject = {};
+                  inBuilding.inside = true;
+                  inBuilding.buildingName = building;
+                  $scope.eventObject.event = "You have entered";
+                  $scope.eventObject.description = inBuilding.buildingName;
+                  $scope.eventHistory.push($scope.eventObject);
+                  resetVariables();
+                  getFamilyMembers();
+                  $scope.getEvent();
+              } else {
+                  unvisitedArray.push(building)
+              }
+          });
+          $scope.buildings = unvisitedArray;
+        }
     }
 
     function leaveBuilding() {
@@ -162,6 +179,7 @@ myApp.controller("indexController", ["$scope", "$http", function($scope, $http) 
         $scope.eventObject.description = inBuilding.buildingName;
         $scope.eventHistory.push($scope.eventObject);
         resetVariables();
+        updateScroll('event_home');
     }
 
     function resetVariables() {
@@ -171,76 +189,71 @@ myApp.controller("indexController", ["$scope", "$http", function($scope, $http) 
     }
 
     function getFamilyMembers() {
-      console.log("getFamilyMembers runs");
-        var numberOfMembers = getNumber("eight");
-        console.log("numberOfMembers", numberOfMembers);
-        for (var i = 0; i < numberOfMembers; i++) {
-          console.log("getFamilyMembers for loop");
-            $http({
-                method: "GET",
-                url: '/gameplay/members',
-            }).then(function(response) {
-                console.log("getFamilyMembers Get Success");
-                console.log(response);
-                $scope.familyMembers.push(response);
-                console.log("Family Member's Array", $scope.familyMembers);
-                whoIsInside();
-                detailedWhoIsInside();
-            }, function() {
-                console.log("Get Error");
+        $scope.familyDice = "eight";
+        $scope.FamilyFactory.getNumber($scope.familyDice).then(function() {
+            $scope.FamilyFactory.getMembers().then(function() {
+                var familyMembers = $scope.FamilyFactory.grabMembers();
+                whoIsInside(familyMembers);
             });
-        }
+        });
+    }
 
-        // var arrayIndex = getNumber('eight');
-        // var emotion = getEmotionalModifier();
-        // $scope.eventObject.event = ;
-        // $scope.eventObject.description = $scope.familyMembers.length + " inside";
-        // $scope.eventHistory.push($scope.eventObject);
-    }
-    function getEmotionalModifier(){
-      $http({
-          method: "GET",
-          url: '/gameplay/emotion',
-      }).then(function(response) {
-          console.log("Get Success");
-          console.log("Emotion!", response.data);
-      }, function() {
-          console.log("Get Error");
-      });
-    }
-    function getNumber(number) {
+
+    function getEmotionalModifier() {
         $http({
             method: "GET",
-            url: '/gameplay/d/' + number,
+            url: '/gameplay/emotion',
         }).then(function(response) {
             console.log("Get Success");
-            console.log("random 1-8 number: ",response.data)
-            console.log(parseInt(response.data));
-            return parseInt(response.data);
+            console.log("Emotion!", response.data);
         }, function() {
             console.log("Get Error");
         });
     }
-    function whoIsInside(){
-      $scope.eventObject.event = "There are ";
-      $scope.eventObject.description = $scope.familyMembers.length + " people inside";
-      $scope.eventHistory.push($scope.eventObject);
-      resetVariables();
+
+    function whoIsInside(familyMembers) {
+        console.log(familyMembers);
+        $scope.eventObject.event = "There are/is ";
+        $scope.eventObject.description = (familyMembers.length + " people inside");
+        $scope.eventHistory.push($scope.eventObject);
+        if($scope.eventHistory[$scope.eventHistory.length-2] == $scope.eventHistory[$scope.eventHistory.length-1]){
+          console.log("Deleted the duplicate");
+          $scope.eventHistory.pop();
+        }
+        console.log($scope.eventHistory);
+        resetVariables();
+        detailedWhoIsInside(familyMembers);
     }
-    function detailedWhoIsInside(){
-      console.log("detailedWhoIsInside is Called");
-      var familyObject = {};
-      $scope.familyMembers.forEach(function(familyMember){
-        $scope.familyMembers.forEach(function(familyType){
-          if(familyMember == familyType){
-            familyObject.familyType += 1;
-            console.log("Family Object", familyObject);
-          }
+
+    function detailedWhoIsInside(familyMembers) {
+        console.log("detailedWhoIsInside is Called");
+        var familyObject = {
+            Mother: 0,
+            Father: 0,
+            Brother: 0,
+            Sister: 0
+        };
+        familyMembers.forEach(function(familyMember) {
+            switch (familyMember) {
+                case "Mother":
+                    familyObject.Mother++;
+                    break;
+                case "Father":
+                    familyObject.Father++;
+                    break;
+                case "Brother":
+                    familyObject.Brother++;
+                    break;
+                case "Sister":
+                    familyObject.Sister++;
+                    break;
+                default:
+                    familyObject.Mother++;
+            };
         });
-      });
-      $scope.eventObject.event = "There are:";
-      $scope.eventObject.description = familyObject.Brother + " Brother(s), " + familyObject.Sister + " Sister(s), " + familyObject.Mother + " Mother(s) and " + familyObject.Father + " Father(s)";
-      $scope.eventHistory.push($scope.eventObject);
-      resetVariables();
+        $scope.eventObject.event = "There are:";
+        $scope.eventObject.description = familyObject.Brother + " Brother(s), " + familyObject.Sister + " Sister(s), " + familyObject.Mother + " Mother(s) and " + familyObject.Father + " Father(s)";
+        $scope.eventHistory.push($scope.eventObject);
+        resetVariables();
     }
 }]);

@@ -32,6 +32,10 @@ form button {
     height: 400px;
 }
 
+.userInput{
+  margin: 15px;
+}
+
 #building_home {
     height: 170px;
     border: 2px solid black;
@@ -58,8 +62,9 @@ form button {
 
 #event_home {
     overflow: scroll;
-    height: 338px;
+    height: 200px;
     border: 2px solid black;
+    padding: 15px;
 }
 
 #chatHome {

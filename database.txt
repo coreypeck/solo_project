@@ -1,7 +1,58 @@
-CREATE TABLE favoritepets (
-id serial PRIMARY KEY,
-petid int,
-petname varchar(35),
-petimg varchar(75),
-petdescription varchar(100)
+CREATE TABLE emotions(
+id SERIAL PRIMARY KEY,
+building_type varchar(30)
+);
+CREATE TABLE town_size(
+id SERIAL PRIMARY KEY,
+building_type varchar(20)
+);
+CREATE TABLE town_buildings(
+id SERIAL PRIMARY KEY,
+building_type varchar(20)
+);
+CREATE TABLE guilds(
+id SERIAL PRIMARY KEY,
+guild_type varchar(20)
+);
+CREATE TABLE insults(
+id SERIAL PRIMARY KEY,
+insult varchar(100),
+comeback varchar(100)
+);
+CREATE TABLE wants_to_fight(
+id SERIAL PRIMARY KEY,
+reason_description varchar(40)
+);
+CREATE TABLE relationship(
+id SERIAL PRIMARY KEY,
+relationship_description varchar(40)
+);
+CREATE TABLE robbed(
+id SERIAL PRIMARY KEY,
+amount_description varchar(20)
+);
+CREATE TABLE murdered(
+id SERIAL PRIMARY KEY,
+murder_description varchar(20)
+);
+CREATE TABLE financial_issues(
+id SERIAL PRIMARY KEY,
+issue_description varchar(20)
+);
+CREATE TABLE kidnapper(
+id SERIAL PRIMARY KEY,
+kidnapper_description varchar(20)
+);
+CREATE TABLE past_figure(
+id SERIAL PRIMARY KEY,
+figure_description varchar(20)
+);
+CREATE TABLE difficulty(
+id SERIAL PRIMARY KEY,
+difficulty_description varchar(20),
+difficulty_number int
+);
+CREATE TABLE events(
+id SERIAL PRIMARY KEY,
+event_description varchar(20)
 );
