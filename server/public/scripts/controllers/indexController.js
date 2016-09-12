@@ -7,7 +7,7 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
     $scope.gameInput = '';
     $scope.chatHistory = [];
     $scope.eventHistory = [];
-    $scope.eventObject = {
+    var eventObject = {
         "event": "",
         "description": ""
     };
@@ -16,7 +16,7 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         inside: false,
         buildingName: ""
     }
-
+    var dummyArray = [];
     //initial town generation
 
     getTown();
@@ -141,10 +141,10 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         //Since go and go next town both start with go, I needed to check for next town BEFORE I checked the building
 
         if (userBuilding.toLowerCase() == "next town") {
-            $scope.eventObject.event = "Now leaving: ";
-            // $scope.eventObject.description = town.townName;
-            $scope.eventObject.description = 'town';
-            $scope.eventHistory.push($scope.eventObject);
+            eventObject.event = "Now leaving: ";
+            // eventObject.description = town.townName;
+            eventObject.description = 'town';
+            $scope.eventHistory.push(eventObject);
             $scope.buildings = [];
             getTown();
             $scope.gameInput = '';
@@ -155,15 +155,15 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
                 if (userBuilding.toLowerCase() == building.toLowerCase()) {
                     console.log("We got a match!");
-                    $scope.eventObject = {
+                    eventObject = {
                         "event": "",
                         "description": ""
                     };
                     inBuilding.inside = true;
                     inBuilding.buildingName = building;
-                    $scope.eventObject.event = "You have entered";
-                    $scope.eventObject.description = inBuilding.buildingName;
-                    $scope.eventHistory.push($scope.eventObject);
+                    eventObject.event = "You have entered";
+                    eventObject.description = inBuilding.buildingName;
+                    $scope.eventHistory.push(eventObject);
                     resetVariables();
                     getFamilyMembers();
                 } else {
@@ -179,13 +179,13 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     function leaveBuilding() {
         inBuilding.inside = false;
-        $scope.eventObject = {
+        eventObject = {
             "event": "",
             "description": ""
         };
-        $scope.eventObject.event = "You have left";
-        $scope.eventObject.description = inBuilding.buildingName;
-        $scope.eventHistory.push($scope.eventObject);
+        eventObject.event = "You have left";
+        eventObject.description = inBuilding.buildingName;
+        $scope.eventHistory.push(eventObject);
         resetVariables();
         updateScroll('event_home');
     }
@@ -194,7 +194,7 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     function resetVariables() {
         $scope.gameInput = '';
-        $scope.eventObject = {
+        eventObject = {
             "event": "",
             "description": ""
         };
@@ -218,9 +218,9 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
     }
 
     function whoIsInside(familyMembers) {
-        $scope.eventObject.event = "You see ";
-        $scope.eventObject.description = (familyMembers.length + " people inside");
-        $scope.eventHistory.push($scope.eventObject);
+        eventObject.event = "You see ";
+        eventObject.description = (familyMembers.length + " people inside");
+        $scope.eventHistory.push(eventObject);
 
         //The code would randomly push a second eventObject, so I had this in place to make sure it didn't get away with it
 
@@ -259,9 +259,9 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
                     familyObject.Mother++;
             };
         });
-        $scope.eventObject.event = "It looks like:";
-        $scope.eventObject.description = familyObject.Brother + " Brother(s), " + familyObject.Sister + " Sister(s), " + familyObject.Mother + " Mother(s) and " + familyObject.Father + " Father(s)";
-        $scope.eventHistory.push($scope.eventObject);
+        eventObject.event = "It looks like:";
+        eventObject.description = familyObject.Brother + " Brother(s), " + familyObject.Sister + " Sister(s), " + familyObject.Mother + " Mother(s) and " + familyObject.Father + " Father(s)";
+        $scope.eventHistory.push(eventObject);
         getEmotions(familyMembers);
         resetVariables();
     }
@@ -281,9 +281,10 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         $scope.FamilyFactory.getNumber("unknown" + number).then(function() {
             var randomFamilyMember = $scope.FamilyFactory.grabNumber();
             var ranFamMem = familyMembers[(randomFamilyMember - 1)];
-            $scope.eventObject.event = "A " + ranFamMem.age_sex_name + " approaches You. ";
-            $scope.eventObject.description = ranFamMem.gender + " looks " + emotion;
-            $scope.eventHistory.push($scope.eventObject);
+            eventObject.event = "A " + ranFamMem.age_sex_name + " approaches You. ";
+            eventObject.description = ranFamMem.gender + " looks " + emotion;
+            $scope.eventHistory.push(eventObject);
+            console.log($scope.eventHistory);
             $scope.getEvent(familyMembers);
         });
     }
@@ -291,16 +292,24 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
     //Gets the event
 
     $scope.getEvent = function(familyMembers) {
-      var array = $scope.eventHistory;
       var ajaxArray = [];
         $scope.FamilyFactory.getEvent().then(function() {
             $scope.FamilyFactory.questPromptEvent().then(function() {
                 $scope.FamilyFactory.questPromptDescription().then(function() {
                     ajaxArray = $scope.FamilyFactory.grabHistory();
-                    console.log(array);
-                    array.push(ajaxArray[0]);
-                    console.log(array);
-                    updateScroll('event_home');
+
+                    //At this point when I push the variable to the array, It will
+                    //reset all other variables I had pushed that had touched ajaxArray
+
+                    console.log("ajaxarray", ajaxArray[0]);
+                    ajaxArray = ajaxArray[0];
+                    eventObject = ajaxArray
+                    dummyArray.push(eventObject);
+                    console.log(dummyArray);
+                    resetVariables();
+                    // $scope.eventHistory.push(ajaxArray[0]);
+                    // console.log($scope.eventHistory);
+                    // updateScroll('event_home');
                 });
             });
         });

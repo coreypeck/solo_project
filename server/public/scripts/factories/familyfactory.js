@@ -35,11 +35,15 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
           url: '/gameplay/firstevent/' + stand_in,
       }).then(function(response) {
           console.log("Get Success");
-          var questString = additionalText + relativeInNeed + response.data[0].description;
+          response = response.data[0].description;
+          if(response.substring(response.length-3, response.length) == "..."){
+            response += (" " + familyMembers[0].gender);
+            console.log(response);
+          }
+          var questString = additionalText + relativeInNeed + response;
           console.log(questString);
           questPrompt.event = questString;
           console.log(stand_in);
-          // questPromptDescription(loweredEvent);
       }, function() {
           console.log("Get Error");
       });
@@ -53,7 +57,6 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
           url: '/gameplay/secondevent/' + stand_in,
       }).then(function(response) {
           console.log("Get Success");
-          console.log(response);
           questPrompt.description = response.data[0].description;
           console.log(questPrompt);
           eventHistory.push(questPrompt);
