@@ -33,7 +33,7 @@ form button {
 }
 
 .userInput{
-  margin: 15px;
+  margin: 10px;
 }
 
 #building_home {
@@ -62,7 +62,7 @@ form button {
 
 #event_home {
     overflow: scroll;
-    height: 200px;
+    height: 300px;
     border: 2px solid black;
     padding: 15px;
 }

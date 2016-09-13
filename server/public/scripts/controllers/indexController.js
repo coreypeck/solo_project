@@ -164,14 +164,6 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             } else {
                 console.log("Quit typing in nonsense ya Goof!");
             }
-            // var voteRoute = $scope.gameInput.substring(5, $scope.gameInput.length);
-            // voteRoute = voteRoute.toLowerCase();
-            // voteBuilding = voteRoute.substring(2, 8);
-            // console.log(voteBuilding);
-            // if(voteRoute = "")
-            // $scope.FamilyFactory.voteRouting(voteRoute).then(function(){
-            //   console.log("Okay, it has been routed...now what?");
-            // });
         }
     }
 
@@ -325,8 +317,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             var ranFamMem = familyMembers[(randomFamilyMember - 1)];
             eventObject.event = "A " + ranFamMem.age_sex_name + " approaches You. ";
             eventObject.description = ranFamMem.gender + " looks " + emotion;
-            var clifford = eventObject;
-            $scope.eventHistory.push(clifford);
+            $scope.eventHistory.push(eventObject);
             getEvent();
         });
     }
@@ -359,6 +350,11 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                                 eventObject.description = (ajaxArray[0].description + questFamilyMember[0].description);
                                 $scope.eventHistory.push(eventObject);
                             }
+                            var actionCall = $scope.FamilyFactory.getCallToAction();
+                            $scope.eventHistory.push(actionCall);
+                            var route = "help";
+                            startVote(route);
+
                             resetVariables();
                             updateScroll('event_home');
                         });
@@ -392,6 +388,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     yesVotes = 0;
                     noVotes = 0;
                     isVoting = false;
+                    hasVoted = false;
                     eventObject.event = "The vote ";
                     eventObject.description = "has failed.";
                     $scope.eventHistory.push(eventObject);
@@ -399,6 +396,32 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     resetVariables();
                 }
             }, 5000);
+        } else if(routeCommand == 'help'){
+          eventObject.event = "A citizen calls for aid! Will you aid them?";
+          eventObject.description = "Please enter Yes or No within 15s to cast your Vote!";
+          $scope.eventHistory.push(eventObject);
+          updateScroll('event_home');
+          $timeout(function() {
+              if (yesVotes > noVotes) {
+                  isVoting = false;
+                  console.log("Fine, I'll help!");
+                  getStory();
+              } else {
+                  var eventObject = {
+                      "event": "",
+                      "description": ""
+                  };
+                  yesVotes = 0;
+                  noVotes = 0;
+                  isVoting = false;
+                  hasVoted = false;
+                  eventObject.event = "The vote ";
+                  eventObject.description = "has failed.";
+                  $scope.eventHistory.push(eventObject);
+                  updateScroll('event_home');
+                  resetVariables();
+              }
+          }, 5000);
         }
     }
 
@@ -418,5 +441,14 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         getTown();
         $scope.gameInput = '';
         updateScroll('event_home');
+    }
+
+    function swordToTheFace() {
+
+    }
+    function getStory(){
+      $scope.FamilyFactory.actionRouting().then(function(){
+        console.log("Action has been routing!");
+      })
     }
 }]);

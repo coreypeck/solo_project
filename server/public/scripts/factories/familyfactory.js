@@ -12,6 +12,7 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     };
     var stand_in = "";
     var guildName = "";
+    var questDifficulty = undefined;
 
     var questPromptEvent = function(relative) {
         eventHistory = [];
@@ -25,7 +26,6 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
             familyNumber = 1;
             numberOfMembers().then(function() {
                 relativeInNeed = relative[0].description;
-                console.log(relativeInNeed);
             });
         }
         var promise = $http({
@@ -34,16 +34,16 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         }).then(function(response) {
             console.log("Get Success");
             var description = response.data[0].description;
+            if(stand_in == "illness" || stand_in == "lost"){
+              questDifficulty = response.data[0].id;
+            }
             if (description.substring(description.length - 3, description.length) == "...") {
-                console.log(relative);
                 description = description.substring(0, description.length - 3)
-                if(stand_in!='in_love'){
-                  description += (" " + relative[0].gender);
+                if (stand_in != 'in_love') {
+                    description += (" " + relative[0].gender);
                 }
-                console.log(description);
             }
             var questString = additionalText + relativeInNeed + description;
-            console.log(questString);
             questPrompt.event = questString;
         }, function() {
             console.log("Get Error");
@@ -52,26 +52,21 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     };
 
     var questPromptDescription = function(relative) {
-        console.log("stand_in", stand_in);
         var promise = $http({
             method: "GET",
             url: '/gameplay/secondevent/' + stand_in,
         }).then(function(response) {
-                console.log("Get Success");
-                console.log(response.data[0].id);
-                console.log(relative[0].pronoun);
                 var description = response.data[0].description;
                 if (stand_in == "in_love") {
                     switch (response.data[0].id) {
                         case 1:
-                        description = relative[0].pronoun + " " + description;
+                            description = relative[0].pronoun + " " + description;
                             break;
                         case 2:
                             description = relative[0].pronoun + " " + description;
                             break;
                         case 3:
-                        console.log(relative[0].pronoun_two);
-                            description = relative[0].pronoun_two + " " + description;
+                            description = relative[0].pronoun_two + description;
                             break;
                     }
                 }
@@ -85,22 +80,23 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     };
 
     var checkStandIn = function(stand_in, savePerson, response, description) {
-        console.log("Save Person", savePerson);
         var des = description;
         switch (stand_in) {
             case 'kidnapped':
                 switch (response.data[0].id) {
                     case 1:
-                        familyNumber = 1;
-                        numberOfMembers().then(function() {
-                            des += savePerson[0].pronoun + " " + familyMembers[0].description;
-                        });
+                        des += " " + savePerson[0].pronoun + " Cousin";
                 }
                 break;
             case 'financial_issues':
                 switch (response.data[0].id) {
                     case 2:
-                        //robbed factor call
+                        $http({
+                            method: "GET",
+                            url: '/gameplay/secondevent/robbed',
+                        }).then(function(response) {
+                            des += response.data[0].description;
+                        });
                         break;
                     case 3:
                         des += " " + savePerson[0].pronoun + " job";
@@ -115,35 +111,24 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
                         des += " " + savePerson[0].pronoun + " bills";
                         break;
                     case 4:
-                        des += " " + savePerson[0].pronoun;
-                        familyNumber = 1;
-                        numberOfMembers().then(function() {
-                            des += familyMembers[0].description;
-                        });
+                        des += " " + savePerson[0].pronoun + " ";
+                        des += "Cousin";
                 }
                 break;
             case 'in_love':
                 switch (response.data[0].id) {
                     case 1:
-                        familyNumber = 1;
-                        numberOfMembers().then(function() {
-                            des += familyMembers[0].description;
-                        });
+                        des += "Cousin";
                 }
                 break;
             case 'wants_to_fight':
                 switch (response.data[0].id) {
                     case 4:
-                        familyNumber = 1;
-                        numberOfMembers().then(function() {
-                            des += familyMembers[0].description;
-                        });
+                        des += "Cousin";
                 }
         }
-        des = des.replace('...','');
+        des = des.replace('...', '');
         questPrompt.description = des;
-        console.log(des);
-        console.log(questPrompt);
         eventHistory.push(questPrompt);
     }
 
@@ -198,7 +183,6 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
                 "description": ""
             };
             stand_in = response.data[0].description.toLowerCase();
-            console.log(stand_in);
         }, function() {
             console.log("Get Error");
         });
@@ -227,23 +211,31 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
             url: '/gameplay/guilds'
         }).then(function(gName) {
             guildName = gName.data[0].description;
-            console.log("getGuildName", guildName);
         }, function() {
             console.log("Get Error");
         });
         return promise;
     }
 
-    var voteRouting = function(voteRoute) {
+    var actionRouting = function() {
+      console.log(stand_in);
+      if(stand_in == "illness" || stand_in == "lost"){
         var promise = $http({
-            method: "POST",
-            url: '/gameplay/' + voteRoute
+            method: "GET",
+            url: '/gameplay/action/' + stand_in + questDifficulty.toString();
         }).then(function() {
-            console.log("POST Success!");
+            console.log("GET Success!");
         }, function() {
-            console.log("POST Error");
+            console.log("GET Error");
         });
         return promise;
+    }
+    var proposition = function() {
+        var questPrompt = {
+            "event": "Will you",
+            "description": "help?"
+        };
+        return questPrompt;
     }
 
 
@@ -285,8 +277,11 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         grabGuildName: function() {
             return guildName;
         },
-        voteRouting: function(voteRoute) {
-            return voteRouting(voteRoute);
+        actionRouting: function() {
+            return actionRouting();
+        },
+        getCallToAction: function(){
+          return proposition();
         }
     };
 

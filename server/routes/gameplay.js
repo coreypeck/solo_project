@@ -146,6 +146,36 @@ router.get('/emotions', function(req, res) {
     });
 });
 
+router.get('/action/:id', function(req, res){
+  pg.connect(connectionString, function(err, client, done) {
+    var id = req.params.id;
+    var number = req.params.id.substring(req.params.id.length-1, req.params.id.length);
+    console.log(number);
+      if (err) {
+          console.log(err);
+          res.sendStatus(500);
+      }
+      if(isNaN(number)){
+        console.log("Number isn't a number");
+        randomNumber = rn.randomnumber4();
+      }else{
+        randomNumber = number;
+      }
+      console.log(randomNumber);
+      client.query("SELECT * FROM" + id + "_action WHERE" + id + "_action = " + randomNumber,
+          function(err, result) {
+              done();
+              console.log("Result", result);
+              if (err) {
+                  console.log("select error: ", err);
+                  res.sendStatus(500);
+              }
+              res.send(result.rows);
+          });
+
+  });
+});
+
 //d for Dice!
 
 router.get('/d/:id', function(req, res) {
