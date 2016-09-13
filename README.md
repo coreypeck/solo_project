@@ -18,3 +18,4 @@ Once you leave a building, the people there will not allow you to disturb them a
 To go to another town type: go next town
 (This field is also Case Insensitive)
 Once you leave the town, you will be unable to return.
+when you type in go next town, this will prompt a vote. Type "yes" (case insensitive) to agree to move on. Do nothing or type "no" to stay

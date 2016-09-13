@@ -1,6 +1,6 @@
 CREATE TABLE emotions(
 id SERIAL PRIMARY KEY,
-building_type varchar(30)
+emotion varchar(30)
 );
 CREATE TABLE town_size(
 id SERIAL PRIMARY KEY,
@@ -19,34 +19,6 @@ id SERIAL PRIMARY KEY,
 insult varchar(100),
 comeback varchar(100)
 );
-CREATE TABLE wants_to_fight(
-id SERIAL PRIMARY KEY,
-reason_description varchar(40)
-);
-CREATE TABLE relationship(
-id SERIAL PRIMARY KEY,
-relationship_description varchar(40)
-);
-CREATE TABLE robbed(
-id SERIAL PRIMARY KEY,
-amount_description varchar(20)
-);
-CREATE TABLE murdered(
-id SERIAL PRIMARY KEY,
-murder_description varchar(20)
-);
-CREATE TABLE financial_issues(
-id SERIAL PRIMARY KEY,
-issue_description varchar(20)
-);
-CREATE TABLE kidnapper(
-id SERIAL PRIMARY KEY,
-kidnapper_description varchar(20)
-);
-CREATE TABLE past_figure(
-id SERIAL PRIMARY KEY,
-figure_description varchar(20)
-);
 CREATE TABLE difficulty(
 id SERIAL PRIMARY KEY,
 difficulty_description varchar(20),
@@ -55,4 +27,48 @@ difficulty_number int
 CREATE TABLE events(
 id SERIAL PRIMARY KEY,
 event_description varchar(20)
+);
+CREATE TABLE family_members(
+id SERIAL PRIMARY KEY,
+description varchar(10),
+gender varchar(10),
+age_sex_name varchar(10),
+pronoun varchar(10),
+pronoun_two varchar(10)
+);
+CREATE TABLE quest_factor_text(
+id SERIAL PRIMARY KEY,
+description varchar(75)
+);
+CREATE TABLE wants_to_fight_factor(
+id SERIAL PRIMARY KEY,
+description varchar(50)
+);
+CREATE TABLE love_factor(
+id SERIAL PRIMARY KEY,
+description varchar(50)
+);
+CREATE TABLE robbed_factor(
+id SERIAL PRIMARY KEY,
+description varchar(50)
+);
+CREATE TABLE murder_factor(
+id SERIAL PRIMARY KEY,
+description varchar(50)
+);
+CREATE TABLE financial_factor(
+id SERIAL PRIMARY KEY,
+description varchar(50)
+);
+CREATE TABLE kidnap_factor(
+id SERIAL PRIMARY KEY,
+description varchar(50)
+);
+CREATE TABLE lost_factor(
+id SERIAL PRIMARY KEY,
+description varchar(50)
+);
+CREATE TABLE illness_factor(
+id SERIAL PRIMARY KEY,
+description varchar(15)
 );
