@@ -76,6 +76,28 @@ router.get('/buildings', function(req, res) {
     });
 });
 
+router.get('/guilds', function(req, res) {
+    pg.connect(connectionString, function(err, client, done) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        randomNumber = rn.randomnumber6();
+        console.log(randomNumber);
+        client.query("SELECT * FROM guilds WHERE guilds.id = " + randomNumber,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+
+    });
+});
+
 //think as in: Family Member
 
 router.get('/members', function(req, res) {
@@ -221,80 +243,25 @@ router.get('/firstevent/:id', function(req, res) {
 });
 
 router.get('/secondevent/:id', function(req, res) {
-var id = req.params.id;
-pg.connect(connectionString, function(err, client, done) {
-    if (err) {
-        console.log(err);
-        res.sendStatus(500);
-    }
-    randomNumber = rn.randomnumber4();
-    console.log("Second Event Random Number: ", randomNumber);
-    console.log("Second Event Id:", id)
-    client.query("SELECT * FROM " + id + "_factor WHERE " + id + "_factor.id = " + randomNumber,
-        function(err, result) {
-            done();
-            console.log("Result", result);
+    var id = req.params.id;
+    pg.connect(connectionString, function(err, client, done) {
             if (err) {
-                console.log("select error: ", err);
+                console.log(err);
                 res.sendStatus(500);
             }
-            res.send(result.rows);
-        });
-
+            randomNumber = rn.randomnumber4();
+            console.log("Second Event Random Number: ", randomNumber);
+            console.log("Second Event Id:", id)
+            client.query("SELECT * FROM " + id + "_factor WHERE " + id + "_factor.id = " + randomNumber,
+                function(err, result) {
+                    done();
+                    console.log("Result", result);
+                    if (err) {
+                        console.log("select error: ", err);
+                        res.sendStatus(500);
+                    }
+                    res.send(result.rows);
+            });
     });
 });
-//this is at the bottom so it doesn't accidently eat another request
-
-// router.get('/:id', function(req, res) {
-//     var id = req.params.id;
-//     console.log("the Id", id);
-//     var tableName = "";
-//     switch (id) {
-//         case "illness":
-//         case "lost":
-//             tableName = "difficulty";
-//             break;
-//         case "kidnapped":
-//             tableName = "kidnapper";
-//             break;
-//         case "financial_issues":
-//             tableName = "financial_issues";
-//             break;
-//         case "murdered":
-//             tableName = "murdered";
-//             break;
-//         case "robbed":
-//             tableName = "robbed";
-//             break;
-//         case "in_love":
-//             tableName = "relationship";
-//             break;
-//         case "wants_to_fight":
-//             tableName = "wants_to_fight";
-//             break;
-//         default:
-//             tableName = "murdered";
-//     };
-//     pg.connect(connectionString, function(err, client, done) {
-//         if (err) {
-//             console.log(err);
-//             res.sendStatus(500);
-//         }
-//         randomNumber = rn.randomnumber4();
-//         console.log("Table Id number: ", randomNumber);
-//         client.query("SELECT * FROM " + tableName + " WHERE " + tableName + ".id = " + randomNumber,
-//             function(err, result) {
-//                 done();
-//                 console.log("Event Modifier Result", result);
-//                 if (err) {
-//                     console.log("select error: ", err);
-//                     res.sendStatus(500);
-//                 }
-//                 // console.log('results: ', resultStuff);
-//
-//                 res.send(result.rows);
-//             });
-//
-//     });
-// });
 module.exports = router;

@@ -1,4 +1,4 @@
-myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", function($scope, $http, FamilyFactory) {
+myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFactory", function($scope, $http, $timeout, FamilyFactory) {
 
     //Socket io is used for my chat interface
 
@@ -7,16 +7,15 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
     $scope.gameInput = '';
     $scope.chatHistory = [];
     $scope.eventHistory = [];
-    var eventObject = {
-        "event": "",
-        "description": ""
-    };
     $scope.FamilyFactory = FamilyFactory;
     var inBuilding = {
         inside: false,
         buildingName: ""
     }
-    var dummyArray = [];
+    var hasVoted = false;
+    var isVoting = false;
+    var yesVotes = 0;
+    var noVotes = 0;
     //initial town generation
 
     getTown();
@@ -79,57 +78,100 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     function getBuildings(buildingNumber) {
         $scope.buildings = [];
+        var bName = "";
 
         //I did this for consistency. So even the first iteration of a building has a number
 
-        var repeats = 1;
         for (var i = 0; i < buildingNumber; i++) {
             $http({
                 method: "GET",
                 url: '/gameplay/buildings'
             }).then(function(buildingName) {
-                var bName = buildingName.data[0].description;
-
-                //This renames the building if another of its kind exists
-
-                $scope.buildings.forEach(function(building) {
-                    if (bName == building || bName == building.substring(0, building.length - 2) || bName == building.substring(0, building.length - 3)) {
-                        repeats++;
-                    }
-                });
-                bName += ("_" + repeats);
-                $scope.buildings.push(bName);
-                $scope.buildings.sort();
-                repeats = 1;
+                if (buildingName.data[0].description == "Guild") {
+                    $scope.FamilyFactory.getGuildName().then(function() {
+                        bName = $scope.FamilyFactory.grabGuildName();
+                        bName += " Guild";
+                        enumerateBuilding(bName);
+                    });
+                } else {
+                    bName = buildingName.data[0].description;
+                    enumerateBuilding(bName);
+                };
             }, function() {
                 console.log("Get Error");
             });
         }
     }
 
+    function enumerateBuilding(bName) {
+        var repeats = 1;
+
+        //This renames the building if another of its kind exists
+
+        $scope.buildings.forEach(function(building) {
+            if (bName == building || bName == building.substring(0, building.length - 2) || bName == building.substring(0, building.length - 3)) {
+                repeats++;
+            }
+        });
+        bName += ("_" + repeats);
+        $scope.buildings.push(bName);
+        $scope.buildings.sort();
+    }
+
     //Checks to see if what was entered was a command
 
     $scope.checkCommand = function() {
 
-        //These will always evaluate to go or leave if the first thing they put is was go or leave
-
-        var checkGo = $scope.gameInput.substring(0, 2);
-        var checkLeave = $scope.gameInput.substring(0, 5);
-        if (checkGo.toLowerCase() == 'go') {
-
-            //Players can't go somewhere else if they haven't left yet
-
-            if (inBuilding.inside == true) {
-                console.log("You have to leave the building you are in first");
+        if (isVoting == true) {
+            var checkYes = $scope.gameInput.substring(0, 3);
+            var checkNo = $scope.gameInput.substring(0, 2);
+            if (checkYes.toLowerCase() == 'yes' && hasVoted == false) {
+                yesVotes++;
+                hasVoted = true;
+                resetVariables();
+            } else if ($scope.gameInput.substring(0, 2) == 'no' && hasVoted == false) {
+                noVotes++;
+                hasVoted = true;
+                resetVariables();
+            } else if (hasVoted == true) {
+                console.log("You already voted, don't get greedy!");
             } else {
-                console.log("You typed in go. The next step is to check the building!");
-                checkBuilding($scope.gameInput.substring(3, $scope.gameInput.length));
+                console.log("You are supposed to be voting right now");
             }
-        } else if (checkLeave.toLowerCase() == 'leave') {
-            console.log("You typed in leave. Cya!");
-            leaveBuilding()
         } else {
-            console.log("Quit typing in nonsense ya Goof!");
+
+            //These will always evaluate to go or leave if the first thing they put is was go or leave
+
+            var checkGo = $scope.gameInput.substring(0, 2);
+            var checkLeave = $scope.gameInput.substring(0, 5);
+            if (checkGo.toLowerCase() == 'go') {
+
+                //Players can't go somewhere else if they haven't left yet
+
+                if (inBuilding.inside == true) {
+                    console.log("You have to leave the building you are in first");
+                } else {
+                    console.log("You typed in go. The next step is to check the building!");
+                    checkBuilding($scope.gameInput.substring(3, $scope.gameInput.length));
+                }
+            } else if (checkLeave.toLowerCase() == 'leave') {
+                if (inBuilding.inside == false) {
+                    console.log("You have to enter a building before you can leave it");
+                } else {
+                    console.log("You typed in leave. Time for the Vote!");
+                    leaveBuilding();
+                }
+            } else {
+                console.log("Quit typing in nonsense ya Goof!");
+            }
+            // var voteRoute = $scope.gameInput.substring(5, $scope.gameInput.length);
+            // voteRoute = voteRoute.toLowerCase();
+            // voteBuilding = voteRoute.substring(2, 8);
+            // console.log(voteBuilding);
+            // if(voteRoute = "")
+            // $scope.FamilyFactory.voteRouting(voteRoute).then(function(){
+            //   console.log("Okay, it has been routed...now what?");
+            // });
         }
     }
 
@@ -141,21 +183,14 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
         //Since go and go next town both start with go, I needed to check for next town BEFORE I checked the building
 
         if (userBuilding.toLowerCase() == "next town") {
-            eventObject.event = "Now leaving: ";
-            // eventObject.description = town.townName;
-            eventObject.description = 'town';
-            $scope.eventHistory.push(eventObject);
-            $scope.buildings = [];
-            getTown();
-            $scope.gameInput = '';
+            startVote(userBuilding.toLowerCase());
         } else {
             $scope.buildings.forEach(function(building, index) {
 
                 //This checks for a matching building in toLowerCase so the user doesn't have to worry about the case
 
                 if (userBuilding.toLowerCase() == building.toLowerCase()) {
-                    console.log("We got a match!");
-                    eventObject = {
+                    var eventObject = {
                         "event": "",
                         "description": ""
                     };
@@ -179,7 +214,7 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     function leaveBuilding() {
         inBuilding.inside = false;
-        eventObject = {
+        var eventObject = {
             "event": "",
             "description": ""
         };
@@ -194,10 +229,6 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     function resetVariables() {
         $scope.gameInput = '';
-        eventObject = {
-            "event": "",
-            "description": ""
-        };
         inBuilding.buildingName = "";
     }
 
@@ -218,6 +249,10 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
     }
 
     function whoIsInside(familyMembers) {
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
         eventObject.event = "You see ";
         eventObject.description = (familyMembers.length + " people inside");
         $scope.eventHistory.push(eventObject);
@@ -259,6 +294,10 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
                     familyObject.Mother++;
             };
         });
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
         eventObject.event = "It looks like:";
         eventObject.description = familyObject.Brother + " Brother(s), " + familyObject.Sister + " Sister(s), " + familyObject.Mother + " Mother(s) and " + familyObject.Father + " Father(s)";
         $scope.eventHistory.push(eventObject);
@@ -277,41 +316,107 @@ myApp.controller("indexController", ["$scope", "$http", "FamilyFactory", functio
 
     function makeDialogue(emotion, familyMembers) {
         var number = familyMembers.length;
-        number = number.toString();
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
         $scope.FamilyFactory.getNumber("unknown" + number).then(function() {
             var randomFamilyMember = $scope.FamilyFactory.grabNumber();
             var ranFamMem = familyMembers[(randomFamilyMember - 1)];
             eventObject.event = "A " + ranFamMem.age_sex_name + " approaches You. ";
             eventObject.description = ranFamMem.gender + " looks " + emotion;
-            $scope.eventHistory.push(eventObject);
-            console.log($scope.eventHistory);
-            $scope.getEvent(familyMembers);
+            var clifford = eventObject;
+            $scope.eventHistory.push(clifford);
+            getEvent();
         });
     }
 
     //Gets the event
 
-    $scope.getEvent = function(familyMembers) {
-      var ajaxArray = [];
-        $scope.FamilyFactory.getEvent().then(function() {
-            $scope.FamilyFactory.questPromptEvent().then(function() {
-                $scope.FamilyFactory.questPromptDescription().then(function() {
-                    ajaxArray = $scope.FamilyFactory.grabHistory();
-
-                    //At this point when I push the variable to the array, It will
-                    //reset all other variables I had pushed that had touched ajaxArray
-
-                    console.log("ajaxarray", ajaxArray[0]);
-                    ajaxArray = ajaxArray[0];
-                    eventObject = ajaxArray
-                    dummyArray.push(eventObject);
-                    console.log(dummyArray);
-                    resetVariables();
-                    // $scope.eventHistory.push(ajaxArray[0]);
-                    // console.log($scope.eventHistory);
-                    // updateScroll('event_home');
+    function getEvent() {
+        var ajaxArray = [];
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
+        var questFamilyMember = undefined;
+        $scope.FamilyFactory.getQuest().then(function() {
+            $scope.FamilyFactory.getNumber('four').then(function() {
+                $scope.FamilyFactory.getMembers().then(function() {
+                    var relative = $scope.FamilyFactory.grabMembers();
+                    $scope.FamilyFactory.questPromptEvent(relative).then(function() {
+                        $scope.FamilyFactory.questPromptDescription(relative).then(function() {
+                            ajaxArray = $scope.FamilyFactory.grabHistory();
+                            if (ajaxArray[0].description.substring(ajaxArray[0].description.length - 3, ajaxArray[0].description.length) == "...") {
+                                questFamilyMember = relative
+                            }
+                            if (questFamilyMember == undefined) {
+                                eventObject.event = ajaxArray[0].event;
+                                eventObject.description = ajaxArray[0].description;
+                                $scope.eventHistory.push(eventObject);
+                            } else {
+                                eventObject.event = ajaxArray[0].event;
+                                eventObject.description = (ajaxArray[0].description + questFamilyMember[0].description);
+                                $scope.eventHistory.push(eventObject);
+                            }
+                            resetVariables();
+                            updateScroll('event_home');
+                        });
+                    });
                 });
             });
         });
+    }
+
+    function startVote(routeCommand) {
+        resetVariables();
+        isVoting = true;
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
+        if (routeCommand == "next town") {
+            eventObject.event = "A player has voted to go to the " + routeCommand;
+            eventObject.description = "Please enter Yes or No within 15s to cast your Vote!";
+            $scope.eventHistory.push(eventObject);
+            updateScroll('event_home');
+            $timeout(function() {
+                if (yesVotes > noVotes) {
+                    isVoting = false;
+                    moveNewTown();
+                } else {
+                    var eventObject = {
+                        "event": "",
+                        "description": ""
+                    };
+                    yesVotes = 0;
+                    noVotes = 0;
+                    isVoting = false;
+                    eventObject.event = "The vote ";
+                    eventObject.description = "has failed.";
+                    $scope.eventHistory.push(eventObject);
+                    updateScroll('event_home');
+                    resetVariables();
+                }
+            }, 5000);
+        }
+    }
+
+    function moveNewTown() {
+        yesVotes = 0;
+        noVotes = 0;
+        hasVoted = false;
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
+        eventObject.event = "Now leaving: ";
+        // eventObject.description = town.townName;
+        eventObject.description = 'town';
+        $scope.eventHistory.push(eventObject);
+        $scope.buildings = [];
+        getTown();
+        $scope.gameInput = '';
+        updateScroll('event_home');
     }
 }]);
