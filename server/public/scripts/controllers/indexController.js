@@ -37,10 +37,15 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     var holdingObjectArray = [];
     var insultNum = 0;
     var fightPosition = 2;
+    var heardOfWando = false;
+    var townsVisited = 0;
+    var completedQuests = 0;
+    var wandoQuestAt = [5,10,20,40];
 
     //initial town generation
 
     getTown();
+
     //The function that shows my local chat
 
     $scope.postChat = function() {
@@ -62,6 +67,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
 
     function getTown() {
         var buildingNumber = 0;
+        townsVisited++;
         $http({
             method: "GET",
             url: '/gameplay/town',
@@ -90,9 +96,29 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             //This will tell us how many buildings to grab
 
             getBuildings(buildingNumber);
+            if (townsVisited == 3) {
+                var eventObject = {
+                    "event": "As you enter this new town, a stranger brushes roughly past you.",
+                    "description": "When your anger subsides, you notice a piece a paper in your hand. It says: 'Find Wando and he will aid you'"
+                };
+                heardOfWando == true;
+                $scope.eventHistory.push(eventObject);
+            }
         }, function() {
             console.log("Get Error");
         });
+    }
+
+    function wandoCheck(bName) {
+        if (bName == "Wando" && heardOfWando == false) {
+            $scope.FamilyFactory.getGuildName().then(function() {
+                bName = $scope.FamilyFactory.grabGuildName();
+                wandoCheck(bName);
+            });
+        } else {
+            bName += " Guild";
+            enumerateBuilding(bName);
+        }
     }
 
     //This does an Ajax request to grab the Event name
@@ -108,19 +134,19 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                 method: "GET",
                 url: '/gameplay/buildings'
             }).then(function(buildingName) {
-                if (buildingName.data[0].description == "Guild") {
-                    $scope.FamilyFactory.getGuildName().then(function() {
-                        bName = $scope.FamilyFactory.grabGuildName();
-                        bName += " Guild";
+                    if (buildingName.data[0].description == "Guild") {
+                        $scope.FamilyFactory.getGuildName().then(function() {
+                            bName = $scope.FamilyFactory.grabGuildName();
+                            wandoCheck(bName);
+                        });
+                    } else {
+                        bName = buildingName.data[0].description;
                         enumerateBuilding(bName);
-                    });
-                } else {
-                    bName = buildingName.data[0].description;
-                    enumerateBuilding(bName);
-                };
-            }, function() {
-                console.log("Get Error");
-            });
+                    };
+                },
+                function() {
+                    console.log("Get Error");
+                });
         }
     }
 
@@ -229,11 +255,19 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         };
         inBuilding.inside = true;
         inBuilding.buildingName = building;
-        eventObject.event = "You have entered";
-        eventObject.description = inBuilding.buildingName;
-        $scope.eventHistory.push(eventObject);
-        resetVariables();
-        getFamilyMembers();
+        if(inBuilding.buildingName == "Wando"){
+          //This will pull from an array of Wando Cook-i-ness
+          //It will describe what Wando is doing when you interrupt him
+          //Wando will check the status of your quest and, if you have
+          //met one or more of the tier goals, he will give you some worthless incentive
+          //if you clear the last objective, he gives you the sword of something or another
+        }else{
+          eventObject.event = "You have entered";
+          eventObject.description = inBuilding.buildingName;
+          $scope.eventHistory.push(eventObject);
+          resetVariables();
+          getFamilyMembers();
+        }
     }
 
     //this function is called when the user types in leave
@@ -356,6 +390,14 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             holdingObjectArray.push(eventObject);
             getEvent();
         });
+    }
+
+    function checkWandoQuests() {
+      wandoQuestAt.forEach(function(section, index){
+        if(completedQuests < section){
+          console.log(section - completedQuests + " more successful quests until section " + index + "is complete");
+        });
+      }
     }
 
     //Gets the event
@@ -548,6 +590,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         eventObject.event = "You are thanked profusely and invited to stay for supper.";
         eventObject.description = " You politely decline. They thank you once move and you leave.";
         $scope.eventHistory.push(eventObject);
+        completedQuests++;
         updateScroll('event_home');
         leaveBuilding();
     }
@@ -577,10 +620,10 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     }
 
     function doQuest() {
-      var eventObject = {
-          "event": "",
-          "description": ""
-      };
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
         var success = false;
         $scope.FamilyFactory.getResult().then(function() {
             var ajaxArray = $scope.FamilyFactory.grabHistory();
@@ -699,6 +742,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                 console.log("You lost");
                 $scope.fighting = false;
                 $scope.loss = true;
+                fightPosition = 2;
                 $timeout(function() {
                     $scope.loss = false;
                     $scope.FamilyFactory.getFightQuote('2').then(function() {
@@ -714,6 +758,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                 console.log("You won!");
                 $scope.fighting = false;
                 $scope.victory = true;
+                fightPosition = 2;
                 $timeout(function() {
                     $scope.victory = false;
                     $scope.FamilyFactory.getFightQuote('1').then(function() {
@@ -732,3 +777,9 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         }
     }
 }]);
+
+//TODO
+//Add pictures to things that are being said
+//Finish Wando quests
+//Story intro (Superimposed DIV Probably)
+//Styling

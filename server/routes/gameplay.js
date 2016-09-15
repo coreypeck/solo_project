@@ -194,6 +194,7 @@ router.get('/fight_success/:id', function(req, res) {
 router.get('/success/:id', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         var number = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
+        console.log(number);
         var id = req.params.id.substring(0, req.params.id.length - 2);
         if (err) {
             console.log(err);
@@ -202,12 +203,13 @@ router.get('/success/:id', function(req, res) {
         if (number == 5) {
             console.log("Number is 5");
             number = '1';
-            randomNumber = 1;
+            randomNumber = 2;
         } else {
-            randomNumber = number;
+            randomNumber = number*2;
         }
         var chanceNumber = rn.coin();
-        chanceNumber = parseInt(chanceNumber) + 1;
+        chanceNumber = parseInt(chanceNumber);
+        randomNumber -= chanceNumber;
         console.log("SELECT * FROM " + id + "_action_" + number + "_success WHERE " + id + "_action_" + number + "_success.id = " + randomNumber);
         var standin = "SELECT * FROM " + id + "_action_" + number + "_success WHERE " + id + "_action_" + number + "_success.id = " + randomNumber;
         client.query(standin,
