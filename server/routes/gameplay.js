@@ -166,6 +166,31 @@ router.get('/insults', function(req, res) {
     });
 });
 
+router.get('/fight_success/:id', function(req, res) {
+    pg.connect(connectionString, function(err, client, done) {
+        var number = req.params.id.substring(req.params.id.length-2, req.params.id.length-1);
+        var idNumber = req.params.id.substring(req.params.id.length-1, req.params.id.length);
+        console.log(number);
+        console.log(idNumber);
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        console.log("SELECT * FROM wants_to_fight_action_" + number + "_success WHERE wants_to_fight_action_" + number + "_success.id = " + idNumber);
+        var standin = "SELECT * FROM wants_to_fight_action_" + number + "_success WHERE wants_to_fight_action_" + number + "_success.id = " + idNumber;
+        client.query(standin,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+    });
+});
+
 router.get('/success/:id', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         var number = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
@@ -182,9 +207,8 @@ router.get('/success/:id', function(req, res) {
             randomNumber = number;
         }
         var chanceNumber = rn.coin();
-        chanceNumber = parseInt(chanceNumber);
-        randomNumber = chanceNumber + parseInt(randomNumber);
-        console.log("SELECT * FROM " + id + "_action_" + number + "_success WHERE " + id + "_action_" + number + "_success.id = " + (randomNumber));
+        chanceNumber = parseInt(chanceNumber) + 1;
+        console.log("SELECT * FROM " + id + "_action_" + number + "_success WHERE " + id + "_action_" + number + "_success.id = " + randomNumber);
         var standin = "SELECT * FROM " + id + "_action_" + number + "_success WHERE " + id + "_action_" + number + "_success.id = " + randomNumber;
         client.query(standin,
             function(err, result) {

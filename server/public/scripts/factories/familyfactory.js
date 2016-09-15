@@ -15,6 +15,7 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     var questDifficulty = undefined;
     var successNumber = undefined;
     var insults = [];
+    var fightQuote = "";
 
     var questPromptEvent = function(relative) {
         eventHistory = [];
@@ -57,6 +58,7 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         }).then(function(response) {
                 var description = response.data[0].description;
                 questDifficulty = response.data[0].id;
+                console.log("questDifficulty", questDifficulty);
                 if (stand_in == "in_love") {
                     switch (response.data[0].id) {
                         case 1:
@@ -169,7 +171,7 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     //I set EventObject in the beginning just to make sure I don't accidently recieve previous data
 
     var getEvent = function() {
-        eventObject = {
+        var eventObject = {
             "event": "",
             "description": ""
         };
@@ -178,10 +180,11 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
             url: '/gameplay',
         }).then(function(response) {
             console.log("Get Success");
-            eventObject = {
+            var eventObject = {
                 "event": "",
                 "description": ""
             };
+            console.log(response);
             stand_in = response.data[0].description.toLowerCase();
         }, function() {
             console.log("Get Error");
@@ -347,6 +350,32 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         return promise;
     }
 
+    var getFightQuote = function(success){
+      var promise = $http({
+          method: "GET",
+          url: '/gameplay/fight_success/' + stand_in + "_" + questDifficulty + success
+      }).then(function(response) {
+          console.log("GET Success!");
+          console.log(response);
+          if (response.data[0].id % 2 == 0) {
+              var questPrompt = {
+                  "event": "Failure: ",
+                  "description": response.data[0].description
+              };
+              eventHistory.push(questPrompt);
+          } else {
+              var questPrompt = {
+                  "event": "Success: ",
+                  "description": response.data[0].description
+              };
+              eventHistory.push(questPrompt);
+          }
+      }, function() {
+          console.log("GET Error");
+      });
+      return promise;
+    }
+
 
 
     return {
@@ -400,6 +429,9 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         },
         grabInsults: function() {
             return insults;
+        },
+        getFightQuote: function(id){
+          return getFightQuote(id);
         }
     };
 }]);

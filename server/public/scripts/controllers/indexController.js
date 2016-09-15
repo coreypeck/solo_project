@@ -41,7 +41,6 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     //initial town generation
 
     getTown();
-    startFight();
     //The function that shows my local chat
 
     $scope.postChat = function() {
@@ -212,13 +211,9 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                         "event": "",
                         "description": ""
                     };
-                    inBuilding.inside = true;
-                    inBuilding.buildingName = building;
-                    eventObject.event = "You have entered";
-                    eventObject.description = inBuilding.buildingName;
-                    $scope.eventHistory.push(eventObject);
-                    resetVariables();
-                    getFamilyMembers();
+                    eventObject.event = 'building';
+                    eventObject.description = building;
+                    startVote(eventObject);
                 } else {
                     unvisitedArray.push(building)
                 }
@@ -227,6 +222,19 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         }
     }
 
+    function enterBuilding(building) {
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
+        inBuilding.inside = true;
+        inBuilding.buildingName = building;
+        eventObject.event = "You have entered";
+        eventObject.description = inBuilding.buildingName;
+        $scope.eventHistory.push(eventObject);
+        resetVariables();
+        getFamilyMembers();
+    }
 
     //this function is called when the user types in leave
 
@@ -465,6 +473,40 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                 }
             }, 5000);
             updateScroll('event_home');
+        } else if (routeCommand.event == 'building') {
+            var eventObject = {
+                "event": "",
+                "description": ""
+            };
+            eventObject.event = "A player wants to enter " + routeCommand.description;
+            eventObject.description = "Please enter Yes or No within 15s to cast your Vote!";
+            $scope.eventHistory.push(eventObject);
+            updateScroll('event_home');
+            $timeout(function() {
+                if (yesVotes > noVotes) {
+                    yesVotes = 0;
+                    noVotes = 0;
+                    isVoting = false;
+                    hasVoted = false;
+                    console.log("Alons-e!");
+                    enterBuilding(routeCommand.description);
+                } else {
+                    var eventObject = {
+                        "event": "",
+                        "description": ""
+                    };
+                    yesVotes = 0;
+                    noVotes = 0;
+                    isVoting = false;
+                    hasVoted = false;
+                    eventObject.event = "The vote ";
+                    eventObject.description = "has failed.";
+                    $scope.eventHistory.push(eventObject);
+                    updateScroll('event_home');
+                    resetVariables();
+                }
+            }, 5000);
+            updateScroll('event_home');
         }
     }
 
@@ -498,6 +540,18 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         updateScroll('event_home');
     }
 
+    function showGraditude() {
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
+        eventObject.event = "You are thanked profusely and invited to stay for supper.";
+        eventObject.description = " You politely decline. They thank you once move and you leave.";
+        $scope.eventHistory.push(eventObject);
+        updateScroll('event_home');
+        leaveBuilding();
+    }
+
     function swordToTheFace() {
 
     }
@@ -523,11 +577,25 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     }
 
     function doQuest() {
+      var eventObject = {
+          "event": "",
+          "description": ""
+      };
+        var success = false;
         $scope.FamilyFactory.getResult().then(function() {
             var ajaxArray = $scope.FamilyFactory.grabHistory();
             eventObject.event = ajaxArray[0].event;
             eventObject.description = ajaxArray[0].description;
+            console.log(eventObject.event);
+            if (eventObject.event == "Success: ") {
+                success = true;
+            }
             $scope.eventHistory.push(eventObject);
+            if (success == true) {
+                showGraditude();
+            } else {
+                showDismay();
+            }
         });
     }
 
@@ -604,7 +672,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             fightPosition++;
             $scope.gameInput = '';
             checkPosition();
-        } else if (choice != insultNum && choice<=3 && choice>=1) {
+        } else if (choice != insultNum && choice <= 3 && choice >= 1) {
             console.log("Focus now!");
             $scope.fight.splice(fightPosition - 1, 1);
             $scope.fight.push({
@@ -620,27 +688,47 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     }
 
     function checkPosition(choice) {
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
+        var ajaxArray = undefined;
         choice = parseInt(choice);
         if (fightPosition == 0 || fightPosition == 4) {
             if (fightPosition == 0) {
                 console.log("You lost");
                 $scope.fighting = false;
                 $scope.loss = true;
-                $timeout(function(){
-                  $scope.loss = false;
+                $timeout(function() {
+                    $scope.loss = false;
+                    $scope.FamilyFactory.getFightQuote('2').then(function() {
+                        ajaxArray = $scope.FamilyFactory.grabHistory();
+                        console.log(ajaxArray);
+                        eventObject.event = ajaxArray[0].event;
+                        eventObject.description = ajaxArray[0].description;
+                        $scope.eventHistory.push(eventObject);
+                        leaveBuilding();
+                    });
                 }, 5000)
             } else if (fightPosition == 4) {
                 console.log("You won!");
                 $scope.fighting = false;
                 $scope.victory = true;
-                $timeout(function(){
-                  $scope.victory = false;
+                $timeout(function() {
+                    $scope.victory = false;
+                    $scope.FamilyFactory.getFightQuote('1').then(function() {
+                        ajaxArray = $scope.FamilyFactory.grabHistory();
+                        eventObject.event = ajaxArray[1].event;
+                        eventObject.description = ajaxArray[1].description;
+                        $scope.eventHistory.push(eventObject);
+                        leaveBuilding();
+                    });
                 }, 5000)
             }
         } else {
-          getInsults();
-          updateScroll('event_home');
-          $scope.gameInput = '';
+            getInsults();
+            updateScroll('event_home');
+            $scope.gameInput = '';
         }
     }
 }]);
