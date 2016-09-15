@@ -8,6 +8,23 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     $scope.chatHistory = [];
     $scope.eventHistory = [];
     $scope.FamilyFactory = FamilyFactory;
+    $scope.fighting = false;
+    $scope.fight = [{
+        image: '../imgs/circle.png'
+    }, {
+        image: '../imgs/circle.png'
+    }, {
+        image: '../imgs/pc/alberto.png'
+    }, {
+        image: '../imgs/npc/badpeople/oldwomanmafia/darthsidious.png'
+    }, {
+        image: '../imgs/circle.png'
+    }, {
+        image: '../imgs/circle.png'
+    }, ];
+    $scope.background = {
+        image: ""
+    };
     var inBuilding = {
         inside: false,
         buildingName: ""
@@ -16,10 +33,15 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     var isVoting = false;
     var yesVotes = 0;
     var noVotes = 0;
+    var insultsArray = [];
+    var holdingObjectArray = [];
+    var insultNum = 0;
+    var fightPosition = 2;
+
     //initial town generation
 
     getTown();
-
+    startFight();
     //The function that shows my local chat
 
     $scope.postChat = function() {
@@ -121,48 +143,52 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     //Checks to see if what was entered was a command
 
     $scope.checkCommand = function() {
-
-        if (isVoting == true) {
-            var checkYes = $scope.gameInput.substring(0, 3);
-            var checkNo = $scope.gameInput.substring(0, 2);
-            if (checkYes.toLowerCase() == 'yes' && hasVoted == false) {
-                yesVotes++;
-                hasVoted = true;
-                resetVariables();
-            } else if ($scope.gameInput.substring(0, 2) == 'no' && hasVoted == false) {
-                noVotes++;
-                hasVoted = true;
-                resetVariables();
-            } else if (hasVoted == true) {
-                console.log("You already voted, don't get greedy!");
-            } else {
-                console.log("You are supposed to be voting right now");
-            }
+        if ($scope.fighting == true) {
+            var choice = $scope.gameInput;
+            checkComeback(choice);
         } else {
-
-            //These will always evaluate to go or leave if the first thing they put is was go or leave
-
-            var checkGo = $scope.gameInput.substring(0, 2);
-            var checkLeave = $scope.gameInput.substring(0, 5);
-            if (checkGo.toLowerCase() == 'go') {
-
-                //Players can't go somewhere else if they haven't left yet
-
-                if (inBuilding.inside == true) {
-                    console.log("You have to leave the building you are in first");
+            if (isVoting == true) {
+                var checkYes = $scope.gameInput.substring(0, 3);
+                var checkNo = $scope.gameInput.substring(0, 2);
+                if (checkYes.toLowerCase() == 'yes' && hasVoted == false) {
+                    yesVotes++;
+                    hasVoted = true;
+                    resetVariables();
+                } else if ($scope.gameInput.substring(0, 2) == 'no' && hasVoted == false) {
+                    noVotes++;
+                    hasVoted = true;
+                    resetVariables();
+                } else if (hasVoted == true) {
+                    console.log("You already voted, don't get greedy!");
                 } else {
-                    console.log("You typed in go. The next step is to check the building!");
-                    checkBuilding($scope.gameInput.substring(3, $scope.gameInput.length));
-                }
-            } else if (checkLeave.toLowerCase() == 'leave') {
-                if (inBuilding.inside == false) {
-                    console.log("You have to enter a building before you can leave it");
-                } else {
-                    console.log("You typed in leave. Time for the Vote!");
-                    leaveBuilding();
+                    console.log("You are supposed to be voting right now");
                 }
             } else {
-                console.log("Quit typing in nonsense ya Goof!");
+
+                //These will always evaluate to go or leave if the first thing they put is was go or leave
+
+                var checkGo = $scope.gameInput.substring(0, 2);
+                var checkLeave = $scope.gameInput.substring(0, 5);
+                if (checkGo.toLowerCase() == 'go') {
+
+                    //Players can't go somewhere else if they haven't left yet
+
+                    if (inBuilding.inside == true) {
+                        console.log("You have to leave the building you are in first");
+                    } else {
+                        console.log("You typed in go. The next step is to check the building!");
+                        checkBuilding($scope.gameInput.substring(3, $scope.gameInput.length));
+                    }
+                } else if (checkLeave.toLowerCase() == 'leave') {
+                    if (inBuilding.inside == false) {
+                        console.log("You have to enter a building before you can leave it");
+                    } else {
+                        console.log("You typed in leave. Time for the Vote!");
+                        leaveBuilding();
+                    }
+                } else {
+                    console.log("Quit typing in nonsense ya Goof!");
+                }
             }
         }
     }
@@ -224,7 +250,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         inBuilding.buildingName = "";
     }
 
-    //this is run to get the amount of faimly members and who they are
+    //this is run to get the amount of family members and who they are
 
     function getFamilyMembers() {
         $scope.fullFamilyDetails = [];
@@ -241,20 +267,14 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     }
 
     function whoIsInside(familyMembers) {
+        holdingObjectArray = [];
         var eventObject = {
             "event": "",
             "description": ""
         };
         eventObject.event = "You see ";
-        eventObject.description = (familyMembers.length + " people inside");
-        $scope.eventHistory.push(eventObject);
-
-        //The code would randomly push a second eventObject, so I had this in place to make sure it didn't get away with it
-
-        if ($scope.eventHistory[$scope.eventHistory.length - 2] == $scope.eventHistory[$scope.eventHistory.length - 1]) {
-            console.log("Deleted the duplicate");
-            $scope.eventHistory.pop();
-        }
+        eventObject.description = (familyMembers.length + " people inside.");
+        holdingObjectArray.push(eventObject);
         resetVariables();
         detailedWhoIsInside(familyMembers);
     }
@@ -290,9 +310,16 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             "event": "",
             "description": ""
         };
-        eventObject.event = "It looks like:";
+        eventObject.event = "It looks like: ";
         eventObject.description = familyObject.Brother + " Brother(s), " + familyObject.Sister + " Sister(s), " + familyObject.Mother + " Mother(s) and " + familyObject.Father + " Father(s)";
-        $scope.eventHistory.push(eventObject);
+        holdingObjectArray.push(eventObject);
+        console.log(holdingObjectArray);
+        var object = {
+            "event": (holdingObjectArray[0].event + holdingObjectArray[0].description),
+            "description": (holdingObjectArray[1].event + holdingObjectArray[1].description)
+        };
+        holdingObjectArray = [];
+        $scope.eventHistory.push(object);
         getEmotions(familyMembers);
         resetVariables();
     }
@@ -307,6 +334,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     //Using the family we have generated and the event that has occured, we can now make cohesive sentences!
 
     function makeDialogue(emotion, familyMembers) {
+        holdingObjectArray = [];
         var number = familyMembers.length;
         var eventObject = {
             "event": "",
@@ -317,7 +345,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             var ranFamMem = familyMembers[(randomFamilyMember - 1)];
             eventObject.event = "A " + ranFamMem.age_sex_name + " approaches You. ";
             eventObject.description = ranFamMem.gender + " looks " + emotion;
-            $scope.eventHistory.push(eventObject);
+            holdingObjectArray.push(eventObject);
             getEvent();
         });
     }
@@ -344,19 +372,32 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                             if (questFamilyMember == undefined) {
                                 eventObject.event = ajaxArray[0].event;
                                 eventObject.description = ajaxArray[0].description;
-                                $scope.eventHistory.push(eventObject);
+                                holdingObjectArray.push(eventObject);
                             } else {
                                 eventObject.event = ajaxArray[0].event;
                                 eventObject.description = (ajaxArray[0].description + questFamilyMember[0].description);
-                                $scope.eventHistory.push(eventObject);
+                                holdingObjectArray.push(eventObject);
                             }
                             var actionCall = $scope.FamilyFactory.getCallToAction();
-                            $scope.eventHistory.push(actionCall);
-                            var route = "help";
-                            startVote(route);
+                            if (holdingObjectArray[1].event.substring(0, 16) == "I  want to Fight") {
+                                var object = {
+                                    "event": (holdingObjectArray[0].event + " " + holdingObjectArray[0].description),
+                                    "description": (holdingObjectArray[1].event + " " + holdingObjectArray[1].description)
+                                };
+                                $scope.eventHistory.push(object);
+                                startFight();
+                            } else {
+                                var object = {
+                                    "event": (holdingObjectArray[0].event + " " + holdingObjectArray[0].description),
+                                    "description": (holdingObjectArray[1].event + " " + holdingObjectArray[1].description + actionCall.event + actionCall.description)
+                                };
+                                $scope.eventHistory.push(object);
+                                var route = "help";
+                                startVote(route);
 
-                            resetVariables();
-                            updateScroll('event_home');
+                                resetVariables();
+                                updateScroll('event_home');
+                            }
                         });
                     });
                 });
@@ -396,33 +437,47 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     resetVariables();
                 }
             }, 5000);
-        } else if(routeCommand == 'help'){
-          eventObject.event = "A citizen calls for aid! Will you aid them?";
-          eventObject.description = "Please enter Yes or No within 15s to cast your Vote!";
-          $scope.eventHistory.push(eventObject);
-          updateScroll('event_home');
-          $timeout(function() {
-              if (yesVotes > noVotes) {
-                  isVoting = false;
-                  console.log("Fine, I'll help!");
-                  getStory();
-              } else {
-                  var eventObject = {
-                      "event": "",
-                      "description": ""
-                  };
-                  yesVotes = 0;
-                  noVotes = 0;
-                  isVoting = false;
-                  hasVoted = false;
-                  eventObject.event = "The vote ";
-                  eventObject.description = "has failed.";
-                  $scope.eventHistory.push(eventObject);
-                  updateScroll('event_home');
-                  resetVariables();
-              }
-          }, 5000);
+        } else if (routeCommand == 'help') {
+            eventObject.event = "A citizen calls for aid! Will you aid them?";
+            eventObject.description = "Please enter Yes or No within 15s to cast your Vote!";
+            $scope.eventHistory.push(eventObject);
+            updateScroll('event_home');
+            $timeout(function() {
+                if (yesVotes > noVotes) {
+                    isVoting = false;
+                    console.log("Fine, I'll help!");
+                    getStory();
+                } else {
+                    var eventObject = {
+                        "event": "",
+                        "description": ""
+                    };
+                    yesVotes = 0;
+                    noVotes = 0;
+                    isVoting = false;
+                    hasVoted = false;
+                    eventObject.event = "The vote ";
+                    eventObject.description = "has failed.";
+                    $scope.eventHistory.push(eventObject);
+                    showDismay();
+                    updateScroll('event_home');
+                    resetVariables();
+                }
+            }, 5000);
+            updateScroll('event_home');
         }
+    }
+
+    function showDismay() {
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
+        eventObject.event = "They look rather disappointed and, not so, kindly";
+        eventObject.description = " show you the door. There is an audible click behind you as they lock it.";
+        $scope.eventHistory.push(eventObject);
+        updateScroll('event_home');
+        leaveBuilding();
     }
 
     function moveNewTown() {
@@ -446,9 +501,146 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     function swordToTheFace() {
 
     }
-    function getStory(){
-      $scope.FamilyFactory.actionRouting().then(function(){
-        console.log("Action has been routing!");
-      })
+
+    function getStory() {
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
+        $scope.FamilyFactory.actionRouting().then(function() {
+            var ajaxArray = $scope.FamilyFactory.grabHistory();
+            console.log(ajaxArray);
+            eventObject.event = ajaxArray[0].event;
+            eventObject.description = ajaxArray[0].description;
+            $scope.eventHistory.push(eventObject);
+            console.log("Action has been routing!");
+            yesVotes = 0;
+            noVotes = 0;
+            hasVoted = false;
+            $scope.gameInput = '';
+            doQuest();
+        });
+    }
+
+    function doQuest() {
+        $scope.FamilyFactory.getResult().then(function() {
+            var ajaxArray = $scope.FamilyFactory.grabHistory();
+            eventObject.event = ajaxArray[0].event;
+            eventObject.description = ajaxArray[0].description;
+            $scope.eventHistory.push(eventObject);
+        });
+    }
+
+    function startFight() {
+        var eventObject = {
+            "event": "",
+            "description": ""
+        };
+        console.log("fight is running")
+        $scope.FamilyFactory.getNumber('six').then(function() {
+            var imgNum = $scope.FamilyFactory.grabNumber();
+            $scope.background.image = ("../imgs/background/fight_background_" + imgNum + ".jpg");
+        });
+        // $scope.FamilyFactory.getOpponent().then(function() {
+        //     $scope.FamilyFactory.getNumber('four').then(function() {
+        //         var opponent = $scope.FamilyFactory.grabOpponent();
+        //     });
+        // });
+        $scope.fighting = true;
+        eventObject.event = "Type 1, 2 or 3 ";
+        eventObject.description = "to select your Comeback!";
+        $scope.eventHistory.push(eventObject);
+        getInsults();
+    }
+
+    function getInsults() {
+        $scope.FamilyFactory.getInsults().then(function() {
+            insultsArray = $scope.FamilyFactory.grabInsults();
+            console.log(insultsArray);
+            $scope.FamilyFactory.getNumber('unknown3').then(function() {
+                insultNum = $scope.FamilyFactory.grabNumber();
+                insultNum--;
+                var eventObject = {
+                    "event": "",
+                    "description": ""
+                };
+                console.log(insultNum);
+                eventObject.event = insultsArray[insultNum].insult;
+                insultNum++;
+                $scope.eventHistory.push(eventObject);
+                var choices = [{
+                    number: '1: ',
+                    comeback: insultsArray[0].comeback
+                }, {
+                    number: '2: ',
+                    comeback: insultsArray[1].comeback
+                }, {
+                    number: '3: ',
+                    comeback: insultsArray[2].comeback
+                }];
+                choices.forEach(function(choice) {
+                    var choiceObject = {
+                        "event": "",
+                        "description": ""
+                    };
+                    choiceObject.event = choice.number;
+                    choiceObject.description = choice.comeback;
+                    $scope.eventHistory.push(choiceObject);
+                    updateScroll('event_home');
+                });
+                updateScroll('event_home');
+            });
+            updateScroll('event_home');
+        });
+    }
+
+    function checkComeback(choice) {
+        if (choice == insultNum) {
+            console.log("Keep going!");
+            $scope.fight.splice(fightPosition + 2, 1);
+            $scope.fight.unshift({
+                image: '../imgs/circle.png'
+            });
+            fightPosition++;
+            $scope.gameInput = '';
+            checkPosition();
+        } else if (choice != insultNum && choice<=3 && choice>=1) {
+            console.log("Focus now!");
+            $scope.fight.splice(fightPosition - 1, 1);
+            $scope.fight.push({
+                image: '../imgs/circle.png'
+            });
+            fightPosition--;
+            $scope.gameInput = '';
+            checkPosition(choice);
+        } else {
+            console.log("Pick ONE of the THREE Numbers Doofus!");
+            $scope.gameInput = '';
+        }
+    }
+
+    function checkPosition(choice) {
+        choice = parseInt(choice);
+        if (fightPosition == 0 || fightPosition == 4) {
+            if (fightPosition == 0) {
+                console.log("You lost");
+                $scope.fighting = false;
+                $scope.loss = true;
+                $timeout(function(){
+                  $scope.loss = false;
+                }, 5000)
+            } else if (fightPosition == 4) {
+                console.log("You won!");
+                $scope.fighting = false;
+                $scope.victory = true;
+                $timeout(function(){
+                  $scope.victory = false;
+                }, 5000)
+            }
+        } else {
+          getInsults();
+          updateScroll('event_home');
+          $scope.gameInput = '';
+        }
     }
 }]);

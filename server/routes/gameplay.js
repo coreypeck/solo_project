@@ -94,7 +94,6 @@ router.get('/guilds', function(req, res) {
                 }
                 res.send(result.rows);
             });
-
     });
 });
 
@@ -146,34 +145,90 @@ router.get('/emotions', function(req, res) {
     });
 });
 
-router.get('/action/:id', function(req, res){
-  pg.connect(connectionString, function(err, client, done) {
-    var id = req.params.id;
-    var number = req.params.id.substring(req.params.id.length-1, req.params.id.length);
-    console.log(number);
-      if (err) {
-          console.log(err);
-          res.sendStatus(500);
-      }
-      if(isNaN(number)){
-        console.log("Number isn't a number");
-        randomNumber = rn.randomnumber4();
-      }else{
-        randomNumber = number;
-      }
-      console.log(randomNumber);
-      client.query("SELECT * FROM" + id + "_action WHERE" + id + "_action = " + randomNumber,
-          function(err, result) {
-              done();
-              console.log("Result", result);
-              if (err) {
-                  console.log("select error: ", err);
-                  res.sendStatus(500);
-              }
-              res.send(result.rows);
-          });
+router.get('/insults', function(req, res) {
+    pg.connect(connectionString, function(err, client, done) {
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        randomNumber = rn.randomnumberunknown(34);
+        console.log(randomNumber);
+        client.query("SELECT * FROM insults WHERE insults.id = " + randomNumber,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+    });
+});
 
-  });
+router.get('/success/:id', function(req, res) {
+    pg.connect(connectionString, function(err, client, done) {
+        var number = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
+        var id = req.params.id.substring(0, req.params.id.length - 2);
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        if (number == 5) {
+            console.log("Number is 5");
+            number = '1';
+            randomNumber = 1;
+        } else {
+            randomNumber = number;
+        }
+        var chanceNumber = rn.coin();
+        chanceNumber = parseInt(chanceNumber);
+        randomNumber = chanceNumber + parseInt(randomNumber);
+        console.log("SELECT * FROM " + id + "_action_" + number + "_success WHERE " + id + "_action_" + number + "_success.id = " + (randomNumber));
+        var standin = "SELECT * FROM " + id + "_action_" + number + "_success WHERE " + id + "_action_" + number + "_success.id = " + randomNumber;
+        client.query(standin,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+    });
+});
+
+router.get('/action/:id', function(req, res) {
+    pg.connect(connectionString, function(err, client, done) {
+        var number = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
+        var id = req.params.id.substring(0, req.params.id.length - 2);
+        console.log(number);
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        if (number == 5) {
+            console.log("Number is 5");
+            number = '1';
+            randomNumber = '1';
+        } else {
+            randomNumber = number;
+        }
+        console.log(randomNumber);
+        console.log("SELECT * FROM " + id + "_action_" + number + " WHERE " + id + "_action_" + number + ".id = " + randomNumber)
+        client.query("SELECT * FROM " + id + "_action_" + number + " WHERE " + id + "_action_" + number + ".id = " + randomNumber,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+
+    });
 });
 
 //d for Dice!
@@ -275,22 +330,22 @@ router.get('/firstevent/:id', function(req, res) {
 router.get('/secondevent/:id', function(req, res) {
     var id = req.params.id;
     pg.connect(connectionString, function(err, client, done) {
-            if (err) {
-                console.log(err);
-                res.sendStatus(500);
-            }
-            randomNumber = rn.randomnumber4();
-            console.log("Second Event Random Number: ", randomNumber);
-            console.log("Second Event Id:", id)
-            client.query("SELECT * FROM " + id + "_factor WHERE " + id + "_factor.id = " + randomNumber,
-                function(err, result) {
-                    done();
-                    console.log("Result", result);
-                    if (err) {
-                        console.log("select error: ", err);
-                        res.sendStatus(500);
-                    }
-                    res.send(result.rows);
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        randomNumber = rn.randomnumber4();
+        console.log("Second Event Random Number: ", randomNumber);
+        console.log("Second Event Id:", id)
+        client.query("SELECT * FROM " + id + "_factor WHERE " + id + "_factor.id = " + randomNumber,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
             });
     });
 });

@@ -1,0 +1,9 @@
+<div class="fighthome" ng-show="fighting" style = 'background-image: url({{background.image}})'>
+<img class="fighters" ng-repeat="picture in fight track by $index" ng-src="{{picture.image}}" height="50" width="25">
+</div>
+<div ng-show="victory">
+<h1>Winner!</h1>
+</div>
+<div ng-show="loss">
+<h1>Loser!</h1>
+</div>

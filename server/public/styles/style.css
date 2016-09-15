@@ -35,6 +35,16 @@ form button {
 .userInput{
   margin: 10px;
 }
+.fighthome{
+  margin: 5px 15px 15px 15px;
+  height: 100px;
+  border: 2px solid black;
+  text-align: center;
+  background-size: cover;
+}
+.fighters{
+  margin: 15px;
+}
 
 #building_home {
     height: 170px;

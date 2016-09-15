@@ -4,6 +4,10 @@ var number = 0;
 
 //these function like Die Rolls for the Integrity of the game
 
+router.coin = function(){
+  number = Math.floor(Math.random() * 2);
+  return number;
+}
 router.randomnumber4 = function(){
   number = Math.floor(Math.random() * (1 + 4 - 1) + 1);
   return number;

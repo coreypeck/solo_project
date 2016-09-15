@@ -4,7 +4,7 @@
         <div class="row content">
             <div class="col-sm-2">
                 <div id="action_home">
-                    <h1>Actions</h1>
+                    <h3>Actions</h3>
                     <ul>
                         <li>
                             Pause
@@ -13,10 +13,16 @@
                             Log Off
                         </li>
                         <li>
-                            Vote New Host
+                            Go (Building Name)
                         </li>
                         <li>
-                            Text: Go/Leave
+                            Go (Next Town)
+                        </li>
+                        <li>
+                            Leave
+                        </li>
+                        <li>
+                            Yes/No
                         </li>
                     </ul>
                 </div>
@@ -44,6 +50,7 @@
             </div>
         </div>
     </div>
+    <div ng-include = "'views/partials/fight.html'"></div>
     <div class="spacer">
         <div id="chatHome">
             <div ng-repeat="message in chatHistory track by $index">

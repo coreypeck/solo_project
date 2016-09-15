@@ -13,6 +13,8 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     var stand_in = "";
     var guildName = "";
     var questDifficulty = undefined;
+    var successNumber = undefined;
+    var insults = [];
 
     var questPromptEvent = function(relative) {
         eventHistory = [];
@@ -34,9 +36,6 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         }).then(function(response) {
             console.log("Get Success");
             var description = response.data[0].description;
-            if(stand_in == "illness" || stand_in == "lost"){
-              questDifficulty = response.data[0].id;
-            }
             if (description.substring(description.length - 3, description.length) == "...") {
                 description = description.substring(0, description.length - 3)
                 if (stand_in != 'in_love') {
@@ -57,6 +56,7 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
             url: '/gameplay/secondevent/' + stand_in,
         }).then(function(response) {
                 var description = response.data[0].description;
+                questDifficulty = response.data[0].id;
                 if (stand_in == "in_love") {
                     switch (response.data[0].id) {
                         case 1:
@@ -218,24 +218,133 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     }
 
     var actionRouting = function() {
-      console.log(stand_in);
-      if(stand_in == "illness" || stand_in == "lost"){
-        var promise = $http({
-            method: "GET",
-            url: '/gameplay/action/' + stand_in + questDifficulty.toString();
-        }).then(function() {
-            console.log("GET Success!");
-        }, function() {
-            console.log("GET Error");
-        });
-        return promise;
+        eventHistory = [];
+        console.log(stand_in);
+        if (stand_in == "wants_to_fight") {
+            console.log("Cool fight starts now!");
+        } else if (stand_in == "illness" || stand_in == "lost" || stand_in == "robbed") {
+            var promise = $http({
+                method: "GET",
+                url: '/gameplay/action/' + stand_in + '_5'
+            }).then(function(response) {
+                console.log("GET Success!");
+                console.log(response);
+                if (stand_in == "robbed") {
+                    var questPrompt = {
+                        "event": "Internally:",
+                        "description": response.data[0].description
+                    };
+                    eventHistory.push(questPrompt);
+                } else {
+                    var questPrompt = {
+                        "event": "One More Thing! ",
+                        "description": response.data[0].description
+                    };
+                    eventHistory.push(questPrompt);
+                }
+            }, function() {
+                console.log("GET Error");
+            });
+            return promise;
+        } else {
+            var promise = $http({
+                method: "GET",
+                url: '/gameplay/action/' + stand_in + "_" + questDifficulty.toString()
+            }).then(function(response) {
+                console.log("GET Success!");
+                console.log(response);
+                var questPrompt = {
+                    "event": "One More Thing! ",
+                    "description": response.data[0].description
+                };
+                eventHistory.push(questPrompt);
+            }, function() {
+                console.log("GET Error");
+            });
+            return promise;
+        }
     }
     var proposition = function() {
         var questPrompt = {
-            "event": "Will you",
-            "description": "help?"
+            "event": " Will you",
+            "description": " help?"
         };
         return questPrompt;
+    }
+    var attemptSuccess = function() {
+        eventHistory = [];
+        console.log(stand_in);
+        if (stand_in == "illness" || stand_in == "lost" || stand_in == "robbed") {
+            var promise = $http({
+                method: "GET",
+                url: '/gameplay/success/' + stand_in + '_5'
+            }).then(function(response) {
+                console.log("GET Success!");
+                console.log(response);
+                if (response.data[0].id % 2 == 0) {
+                    var questPrompt = {
+                        "event": "Failure: ",
+                        "description": response.data[0].description
+                    };
+                } else {
+                    var questPrompt = {
+                        "event": "Success: ",
+                        "description": response.data[0].description
+                    };
+                }
+                eventHistory.push(questPrompt);
+            }, function() {
+                console.log("GET Error");
+            });
+            return promise;
+        } else {
+            var promise = $http({
+                method: "GET",
+                url: '/gameplay/success/' + stand_in + "_" + questDifficulty.toString()
+            }).then(function(response) {
+                console.log("GET Success!");
+                console.log(response);
+                if (response.data[0].id % 2 == 0) {
+                    var questPrompt = {
+                        "event": "Failure: ",
+                        "description": response.data[0].description
+                    };
+                } else {
+                    var questPrompt = {
+                        "event": "Success: ",
+                        "description": response.data[0].description
+                    };
+                }
+                eventHistory.push(questPrompt);
+            }, function() {
+                console.log("GET Error");
+            });
+            return promise;
+        }
+    }
+    var getInsults = function() {
+      var counter = 0;
+        insults = [];
+        console.log(insults.length);
+        for (var i = 0; i < 6; i++){
+            var promise = $http({
+                method: "GET",
+                url: '/gameplay/insults'
+            }).then(function(response) {
+              var repeats = 0;
+                insults.forEach(function(insult) {
+                    if (response.data[0].id == insult.id) {
+                        repeats++;
+                    }
+                });
+                if (repeats == 0) {
+                    insults.push(response.data[0]);
+                }
+            }, function() {
+                console.log("Get Error");
+            });
+        }
+        return promise;
     }
 
 
@@ -280,9 +389,17 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         actionRouting: function() {
             return actionRouting();
         },
-        getCallToAction: function(){
-          return proposition();
+        getCallToAction: function() {
+            return proposition();
+        },
+        getResult: function() {
+            return attemptSuccess();
+        },
+        getInsults: function() {
+            return getInsults();
+        },
+        grabInsults: function() {
+            return insults;
         }
     };
-
 }]);
