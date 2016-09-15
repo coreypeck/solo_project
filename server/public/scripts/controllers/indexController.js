@@ -396,8 +396,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
       wandoQuestAt.forEach(function(section, index){
         if(completedQuests < section){
           console.log(section - completedQuests + " more successful quests until section " + index + "is complete");
-        });
-      }
+        }
+      });
     }
 
     //Gets the event

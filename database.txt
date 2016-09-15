@@ -72,34 +72,6 @@ CREATE TABLE illness_factor(
 id SERIAL PRIMARY KEY,
 description varchar(15)
 );
-CREATE TABLE wants_to_fight_action_4(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE wants_to_fight_action_3(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE wants_to_fight_action_2(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE wants_to_fight_action_1(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE robbed_action_4(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE robbed_action_3(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE robbed_action_2(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
 CREATE TABLE robbed_action_1(
 id SERIAL PRIMARY KEY,
 description varchar(150)
@@ -164,35 +136,103 @@ CREATE TABLE financial_issues_action_1(
 id SERIAL PRIMARY KEY,
 description varchar(150)
 );
-CREATE TABLE lost_action_4(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE lost_action_3(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE lost_action_2(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
 CREATE TABLE lost_action_1(
 id SERIAL PRIMARY KEY,
 description varchar(150)
 );
-CREATE TABLE illness_action_4(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE illness_action_3(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
-CREATE TABLE illness_action_2(
-id SERIAL PRIMARY KEY,
-description varchar(150)
-);
 CREATE TABLE illness_action_1(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE financial_issues_action_4_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE financial_issues_action_3_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE financial_issues_action_2_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE financial_issues_action_1_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE lost_action_1_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE kidnapped_action_4_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE kidnapped_action_3_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE kidnapped_action_2_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE kidnapped_action_1_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE in_love_action_4_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE in_love_action_3_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE in_love_action_2_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE in_love_action_1_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE murdered_action_4_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE murdered_action_3_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE murdered_action_2_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE murdered_action_1_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE robbed_action_1_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE wants_to_fight_action_4_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE wants_to_fight_action_3_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE wants_to_fight_action_2_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE wants_to_fight_action_1_success(
+id SERIAL PRIMARY KEY,
+description varchar(150)
+);
+CREATE TABLE illness_action_1_success(
 id SERIAL PRIMARY KEY,
 description varchar(150)
 );
