@@ -257,6 +257,38 @@ router.get('/action/:id', function(req, res) {
     });
 });
 
+router.get('/wando/:id', function(req, res) {
+    pg.connect(connectionString, function(err, client, done) {
+        var lessTen = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
+        var isTen = req.params.id.substring(req.params.id.length - 2, req.params.id.length);
+        console.log(lessTen);
+        console.log(isTen);
+        if (err) {
+            console.log(err);
+            res.sendStatus(500);
+        }
+        if (isTen == 10) {
+            console.log("Number is 5");
+            number = isTen;
+        } else {
+            number = lessTen;
+        }
+        console.log(randomNumber);
+        console.log("SELECT * FROM wando_actions WHERE wando_actions.id = " + number)
+        client.query("SELECT * FROM wando_actions WHERE wando_actions.id = " + number,
+            function(err, result) {
+                done();
+                console.log("Result", result);
+                if (err) {
+                    console.log("select error: ", err);
+                    res.sendStatus(500);
+                }
+                res.send(result.rows);
+            });
+
+    });
+});
+
 //d for Dice!
 
 router.get('/d/:id', function(req, res) {

@@ -16,6 +16,7 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     var successNumber = undefined;
     var insults = [];
     var fightQuote = "";
+    var wandoAction = "";
 
     var questPromptEvent = function(relative) {
         eventHistory = [];
@@ -376,6 +377,19 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
       return promise;
     }
 
+    var getWandoAction = function(number){
+      var promise = $http({
+          method: "GET",
+          url: '/gameplay/wando/' + number
+      }).then(function(response) {
+          console.log("GET Success!");
+          console.log(response);
+          wandoAction = response.data[0].description;
+      }, function() {
+          console.log("GET Error");
+      });
+      return promise;
+    }
 
 
     return {
@@ -432,6 +446,12 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         },
         getFightQuote: function(id){
           return getFightQuote(id);
+        },
+        getWandoAction: function(number){
+          return getWandoAction(number);
+        },
+        grabWandoAction: function(){
+          return wandoAction;
         }
     };
 }]);

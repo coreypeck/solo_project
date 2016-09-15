@@ -40,7 +40,11 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     var heardOfWando = false;
     var townsVisited = 0;
     var completedQuests = 0;
-    var wandoQuestAt = [5,10,20,40];
+    var wandoQuestAt = [5, 10, 20, 40];
+    var wandoTier = 1;
+    var wandoCount = 0;
+    var metWando = false;
+    var wandoIntro = "You follow the roads until you reach Wando's clearing. You see a small Wagon hooked up to two large Oxen. Wando looks to be an old man with mad scientist hair. Wando looks up from the book he was reading and regards you. You see in his gaze great wisdom, and more than a bit of insanity";
 
     //initial town generation
 
@@ -101,7 +105,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     "event": "As you enter this new town, a stranger brushes roughly past you.",
                     "description": "When your anger subsides, you notice a piece a paper in your hand. It says: 'Find Wando and he will aid you'"
                 };
-                heardOfWando == true;
+                heardOfWando = true;
                 $scope.eventHistory.push(eventObject);
             }
         }, function() {
@@ -110,16 +114,26 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     }
 
     function wandoCheck(bName) {
+        console.log(bName);
         if (bName == "Wando" && heardOfWando == false) {
             $scope.FamilyFactory.getGuildName().then(function() {
                 bName = $scope.FamilyFactory.grabGuildName();
                 wandoCheck(bName);
             });
+        } else if (bName == "Wando" && wandoCount == 1) {
+            $scope.FamilyFactory.getGuildName().then(function() {
+                bName = $scope.FamilyFactory.grabGuildName();
+                wandoCheck(bName);
+            });
+        } else if (bName == "Wando" || bName == "Church") {
+            wandoCount = 1;
+            enumerateBuilding(bName);
         } else {
             bName += " Guild";
             enumerateBuilding(bName);
         }
     }
+
 
     //This does an Ajax request to grab the Event name
 
@@ -134,6 +148,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                 method: "GET",
                 url: '/gameplay/buildings'
             }).then(function(buildingName) {
+                    var test = 'Wando';
+                    wandoCheck(test);
                     if (buildingName.data[0].description == "Guild") {
                         $scope.FamilyFactory.getGuildName().then(function() {
                             bName = $scope.FamilyFactory.grabGuildName();
@@ -160,7 +176,9 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                 repeats++;
             }
         });
-        bName += ("_" + repeats);
+        if (bName !== "Wando") {
+            bName += ("_" + repeats);
+        }
         $scope.buildings.push(bName);
         $scope.buildings.sort();
     }
@@ -255,18 +273,41 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         };
         inBuilding.inside = true;
         inBuilding.buildingName = building;
-        if(inBuilding.buildingName == "Wando"){
-          //This will pull from an array of Wando Cook-i-ness
-          //It will describe what Wando is doing when you interrupt him
-          //Wando will check the status of your quest and, if you have
-          //met one or more of the tier goals, he will give you some worthless incentive
-          //if you clear the last objective, he gives you the sword of something or another
-        }else{
-          eventObject.event = "You have entered";
-          eventObject.description = inBuilding.buildingName;
-          $scope.eventHistory.push(eventObject);
-          resetVariables();
-          getFamilyMembers();
+        if (inBuilding.buildingName == "Wando") {
+            if (metWando == false) {
+                metWando = true;
+                var eventObject = {
+                    "event": "",
+                    "description": ""
+                };
+                eventObject.description = wandoIntro;
+                $scope.eventHistory.push(eventObject);
+            }
+            else{
+            $scope.FamilyFactory.getNumber().then(function() {
+                var wandoActionNumber = $scope.FamilyFactory.grabNumber();
+                $scope.FamilyFactory.getWandoAction(wandoActionNumber).then(function() {
+                    var wandoAction = $scope.FamilyFactory.grabWandoAction();
+                    var eventObject = {
+                        "event": "",
+                        "description": ""
+                    };
+                    eventObject.description = wandoAction;
+                    $scope.eventHistory.push(eventObject);
+                });
+            });
+          }
+            //This will pull from an array of Wando Cook-i-ness
+            //It will describe what Wando is doing when you interrupt him
+            //Wando will check the status of your quest and, if you have
+            //met one or more of the tier goals, he will give you some worthless incentive
+            //if you clear the last objective, he gives you the sword of something or another
+        } else {
+            eventObject.event = "You have entered";
+            eventObject.description = inBuilding.buildingName;
+            $scope.eventHistory.push(eventObject);
+            resetVariables();
+            getFamilyMembers();
         }
     }
 
@@ -393,11 +434,11 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     }
 
     function checkWandoQuests() {
-      wandoQuestAt.forEach(function(section, index){
-        if(completedQuests < section){
-          console.log(section - completedQuests + " more successful quests until section " + index + "is complete");
-        }
-      });
+        wandoQuestAt.forEach(function(section, index) {
+            if (completedQuests < section) {
+                console.log(section - completedQuests + " more successful quests until section " + index + "is complete");
+            }
+        });
     }
 
     //Gets the event
@@ -470,6 +511,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             $timeout(function() {
                 if (yesVotes > noVotes) {
                     isVoting = false;
+                    wandoCount = 0;
                     moveNewTown();
                 } else {
                     var eventObject = {

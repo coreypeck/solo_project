@@ -236,3 +236,8 @@ CREATE TABLE illness_action_1_success(
 id SERIAL PRIMARY KEY,
 description varchar(150)
 );
+CREATE TABLE wandos_wares(
+id SERIAL PRIMARY KEY,
+item varchar(150),
+item_description varchar(300)
+);
