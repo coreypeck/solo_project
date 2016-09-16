@@ -174,7 +174,8 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     var getEvent = function() {
         var eventObject = {
             "event": "",
-            "description": ""
+            "description": "",
+            "image": ""
         };
         var promise = $http({
             method: "GET",
@@ -183,7 +184,8 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
             console.log("Get Success");
             var eventObject = {
                 "event": "",
-                "description": ""
+                "description": "",
+                "image": ""
             };
             console.log(response);
             stand_in = response.data[0].description.toLowerCase();
@@ -236,13 +238,15 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
                 if (stand_in == "robbed") {
                     var questPrompt = {
                         "event": "Internally:",
-                        "description": response.data[0].description
+                        "description": response.data[0].description,
+                        "image": ""
                     };
                     eventHistory.push(questPrompt);
                 } else {
                     var questPrompt = {
                         "event": "One More Thing! ",
-                        "description": response.data[0].description
+                        "description": response.data[0].description,
+                        "image": ""
                     };
                     eventHistory.push(questPrompt);
                 }
@@ -259,7 +263,8 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
                 console.log(response);
                 var questPrompt = {
                     "event": "One More Thing! ",
-                    "description": response.data[0].description
+                    "description": response.data[0].description,
+                    "image": ""
                 };
                 eventHistory.push(questPrompt);
             }, function() {
@@ -271,7 +276,8 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     var proposition = function() {
         var questPrompt = {
             "event": " Will you",
-            "description": " help?"
+            "description": " help?",
+            "image": ""
         };
         return questPrompt;
     }
@@ -288,12 +294,14 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
                 if (response.data[0].id % 2 == 0) {
                     var questPrompt = {
                         "event": "Failure: ",
-                        "description": response.data[0].description
+                        "description": response.data[0].description,
+                        "image": ""
                     };
                 } else {
                     var questPrompt = {
                         "event": "Success: ",
-                        "description": response.data[0].description
+                        "description": response.data[0].description,
+                        "image": ""
                     };
                 }
                 eventHistory.push(questPrompt);
@@ -311,12 +319,14 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
                 if (response.data[0].id % 2 == 0) {
                     var questPrompt = {
                         "event": "Failure: ",
-                        "description": response.data[0].description
+                        "description": response.data[0].description,
+                        "image": ""
                     };
                 } else {
                     var questPrompt = {
                         "event": "Success: ",
-                        "description": response.data[0].description
+                        "description": response.data[0].description,
+                        "image": ""
                     };
                 }
                 eventHistory.push(questPrompt);
@@ -361,13 +371,15 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
           if (response.data[0].id % 2 == 0) {
               var questPrompt = {
                   "event": "Failure: ",
-                  "description": response.data[0].description
+                  "description": response.data[0].description,
+                  "image": ""
               };
               eventHistory.push(questPrompt);
           } else {
               var questPrompt = {
                   "event": "Success: ",
-                  "description": response.data[0].description
+                  "description": response.data[0].description,
+                  "image": ""
               };
               eventHistory.push(questPrompt);
           }

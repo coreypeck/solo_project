@@ -4,11 +4,20 @@ var myApp = angular.module('myApp', ['ngRoute']);
 
 myApp.config(['$routeProvider', function($routeProvider) {
     $routeProvider
-        .when('/game', {
+        .when('/home', {
+            templateUrl: '/views/home.html',
+            controller: "LoginController"
+        })
+        .when('/register', {
+            templateUrl: '/views/register.html',
+            controller: "LoginController"
+        })
+        .when('/user', {
             templateUrl: '/views/partials/game.html',
             controller: "indexController"
         })
         .otherwise({
-            redirectTo: 'game'
+            redirectTo: 'home'
         })
+
 }]);

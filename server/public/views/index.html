@@ -1,26 +1,25 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <title>Triple R PG</title>
+        <link rel="stylesheet" href="/vendors/bootstrap.min.css">
+        <link rel="stylesheet" href="/styles/style.css">
 
-<head lang="en">
-    <meta charset="UTF-8">
-    <title>Triple R PG</title>
-    <link rel="stylesheet" href="/vendors/bootstrap.min.css" />
-    <link rel="stylesheet" href="/styles/style.css" />
-    <!-- Angular -->
-    <script type="text/javascript" src="/vendors/angular.min.js"></script>
-    <script type="text/javascript" src="/vendors/angular-route.min.js"></script>
-    <script type="text/javascript" src="/scripts/ang_app.js"></script>
-    <script type="text/javascript" src="/scripts/factories/familyfactory.js"></script>
-    <script type="text/javascript" src="/scripts/controllers/indexController.js"></script>
-    <!-- <script type="text/javascript" src="/scripts/controllers/favesController.js"></script> -->
-    <script src="/socket.io/socket.io.js"></script>
-</head>
+        <script type="text/javascript" src="/vendors/angular.min.js"></script>
+        <script type="text/javascript" src="/vendors/angular-route.min.js"></script>
+        <script type="text/javascript" src="/scripts/clientapp.js"></script>
+        <script type="text/javascript" src="/scripts/controllers/loginController.js"></script>
+        <script type="text/javascript" src="/scripts/controllers/userController.js"></script>
+        <script type="text/javascript" src="/scripts/factories/familyfactory.js"></script>
+        <script type="text/javascript" src="/scripts/controllers/indexController.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
 
-<body>
-    <div ng-app="myApp">
-        <main ng-view></main>
-    </div>
+    </head>
 
-</body>
+    <body ng-app="myApp">
+      <header ng-include="'/views/templates/header.html'"></header>
 
+      <main ng-view></main>
+
+    </body>
 </html>
