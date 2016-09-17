@@ -46,9 +46,22 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     var wandoCount = 0;
     var metWando = false;
     var wandoIntro = "You follow the roads until you reach Wando's clearing. You see a small Wagon hooked up to two large Oxen. Wando looks to be an old man with mad scientist hair. Wando looks up from the book he was reading and regards you. You see in his gaze great wisdom, and more than a bit of insanity";
-
+    function updateSuccessStatus() {
+      console.log($scope.submitSuccess);
+      $scope.submitSuccess = {'border': '5px solid green'};
+      $timeout(function(){
+        $scope.submitSuccess = {'border': '2px solid black'};
+      }, 5000);
+    }
     //initial town generation
-
+    $scope.FamilyFactory.getUser().then(function(){
+      $scope.FamilyFactory.getNumber('unknown1').then(function(){
+        var index = $scope.FamilyFactory.grabNumber();
+        console.log(index);
+        $scope.userImage = $scope.FamilyFactory.grabImage(index - 1);
+        console.log($scope.userImage);
+      });
+    });
     getTown();
 
 
@@ -196,6 +209,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         if ($scope.fighting == true) {
             var choice = $scope.gameInput;
             checkComeback(choice);
+            updateSuccessStatus();
         } else {
             if (isVoting == true) {
                 var checkYes = $scope.gameInput.substring(0, 3);
@@ -204,10 +218,12 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     yesVotes++;
                     hasVoted = true;
                     resetVariables();
+                    updateSuccessStatus();
                 } else if ($scope.gameInput.substring(0, 2) == 'no' && hasVoted == false) {
                     noVotes++;
                     hasVoted = true;
                     resetVariables();
+                    updateSuccessStatus();
                 } else if (hasVoted == true) {
                     console.log("You already voted, don't get greedy!");
                 } else {
@@ -235,6 +251,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     } else {
                         console.log("You typed in leave. Time for the Vote!");
                         leaveBuilding();
+                        updateSuccessStatus();
                     }
                 } else {
                     console.log("Quit typing in nonsense ya Goof!");
@@ -535,7 +552,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     updateScroll('event_home');
                     resetVariables();
                 }
-            }, 10000);
+            }, 20000);
         } else if (routeCommand == 'help') {
             eventObject.event = "A citizen calls for aid! Will you aid them?";
             eventObject.description = "Please enter Yes or No within 15s to cast your Vote!";
@@ -563,7 +580,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     updateScroll('event_home');
                     resetVariables();
                 }
-            }, 10000);
+            }, 20000);
             updateScroll('event_home');
         } else if (routeCommand.event == 'building') {
             var eventObject = {
@@ -599,7 +616,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     updateScroll('event_home');
                     resetVariables();
                 }
-            }, 10000);
+            }, 20000);
             updateScroll('event_home');
         }
     }
@@ -813,7 +830,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                         $scope.eventHistory.push(eventObject);
                         leaveBuilding();
                     });
-                }, 10000)
+                }, 20000)
             } else if (fightPosition == 4) {
                 console.log("You won!");
                 $scope.fighting = false;

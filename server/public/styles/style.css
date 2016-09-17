@@ -31,7 +31,9 @@ form button {
 .spacer {
     height: 400px;
 }
-
+.userInputForm{
+  margin: 10px;
+}
 .userInput{
   margin: 10px;
 }
@@ -44,6 +46,15 @@ form button {
 }
 .fighters{
   margin: 15px;
+}
+.speaker{
+  float:left;
+}
+.events{
+  height: 45px;
+}
+.eventSpacing{
+  padding-top: 15px;
 }
 
 #building_home {

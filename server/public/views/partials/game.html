@@ -36,16 +36,19 @@
             </div>
             <div class="col-sm-10 text-center">
                 <div id="event_home" ng-model="eventHistory">
-                    <p ng-repeat="event in eventHistory track by $index">
-                        <img ng-src="{{event.image}}" /><span>{{event.event}} {{event.description}}</span>
-                    </p>
+                    <div ng-repeat="event in eventHistory track by $index">
+                        <div class="events">
+                          <img class="speaker" ng-src="{{event.image}}" /><p class="eventSpacing">{{event.event}} {{event.description}}</p>
+                        </div>
+                    </div>
                 </div>
-                <form class="userInput">
-                    <input class="userInput" ng-model="gameInput" /><button ng-click="checkCommand()">Send</button>
+                <form class="userInputForm">
+                    <input class="userInput" ng-style='submitSuccess' ng-model="gameInput" /><button ng-click="checkCommand()">Send</button>
                 </form>
             </div>
         </div>
     </div>
+    <img ng-src="{{userImage}}" height="50" width="25">
     <div ng-include="'views/partials/fight.html'"></div>
     <div class="spacer">
         <div id="chatHome">
