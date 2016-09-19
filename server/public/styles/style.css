@@ -64,12 +64,41 @@ form button {
 }
 .button{
   width: 75px;
-  margin: 20px 0 0 0;
+  margin: 20px 0 20px 0;
 }
 .buttonContainer{
   text-align: center;
 }
-
+.username{
+  padding-left: 25px;
+  font-size: 20px;
+}
+.password{
+  padding-left: 25px;
+  font-size: 20px;
+}
+.usernameField{
+  width: 80%;
+  margin-top: 25px;
+}
+.passwordField{
+  width: 80%;
+  margin-top: 25px;
+}
+.register{
+  margin-top: 30px;
+}
+.profileImage{
+  font-size: 20px;
+}
+.profileImageSelection{
+  text-align: center;
+  margin-top: 25px;
+}
+.imageButton{
+  width: 45px;
+  padding: 0;
+}
 #building_home {
     height: 170px;
     border: 2px solid black;
@@ -119,6 +148,7 @@ form button {
 }
 #loginForm{
   width: 900px;
+  margin: 0px;
 }
 #gameHome{
   background-color: BurlyWood;
@@ -129,7 +159,7 @@ form button {
   padding: 0 15px 0 0;
 }
 #loginStyle{
-  background-color: blanchedalmond;
+  background-color: BurlyWood;
   width: 90%;
   margin: 0 auto;
 }

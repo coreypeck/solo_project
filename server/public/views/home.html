@@ -3,17 +3,17 @@
     <h1 class="lead alert alert-danger" role="alert" ng-if="message != ''">{{message}}</h2>
 <div id="loginStyle">
     <form ng-submit="login()">
-      <div>
+      <div class="username">
           <label for="username">Username:</label>
-          <input type="text" ng-model="user.username" />
+          <input class="usernameField" type="text" ng-model="user.username" />
       </div>
-      <div>
+      <div class="password">
           <label for="password">Password:</label>
-          <input type="password" ng-model="user.password" />
+          <input class="passwordField" type="password" ng-model="user.password" />
       </div>
       <div class="buttonContainer">
           <input class="btn btn-default button" type="submit" name="submit" value="Log In" />
-          <a href="#register">Register</a>
+          <a href="#register" class="register">Register</a>
       </div>
     </form>
   </div>

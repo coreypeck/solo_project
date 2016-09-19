@@ -1,7 +1,7 @@
 var express = require("express");
 var app = express();
 var server = require('http').createServer(app);
-var io = require('socket.io').listen(http);
+var io = require('socket.io').listen(server);
 var bodyParser = require('body-parser');
 var path = require('path');
 
@@ -58,14 +58,5 @@ io.sockets.on('connection', function(socket){
   });
 });
 
-function sessionCleanup() {
-    sessionStore.all(function(err, sessions) {
-        for (var i = 0; i < sessions.length; i++) {
-            sessionStore.get(sessions[i], function() {} );
-        }
-    });
-}
-
-setInterval(sessionCleanup, 5000);
 
 server.listen(process.env.PORT || 5000);
