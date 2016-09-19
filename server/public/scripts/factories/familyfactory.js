@@ -22,6 +22,7 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
         image: ""
     };
     var userImageArray = [];
+    var questId = "";
 
     var getUser = function() {
       var promise = $http.get('/user').then(function(response) {
@@ -150,6 +151,7 @@ var checkStandIn = function(stand_in, savePerson, response, description) {
     des = des.replace('...', '');
     questPrompt.description = des;
     eventHistory.push(questPrompt);
+    questId = response.data[0].id;
 }
 
 //this is my number getter. The 'd' stand for Die or Dice
@@ -243,15 +245,17 @@ var getGuildName = function() {
 var actionRouting = function() {
     eventHistory = [];
     console.log(stand_in);
+    console.log(questDifficulty.toString());
     if (stand_in == "wants_to_fight") {
         console.log("Cool fight starts now!");
     } else if (stand_in == "illness" || stand_in == "lost" || stand_in == "robbed") {
         var promise = $http({
             method: "GET",
-            url: '/gameplay/action/' + stand_in + '_5'
+            url: '/gameplay/action/' + stand_in + "_" + questDifficulty.toString() + "_" + questId
         }).then(function(response) {
             console.log("GET Success!");
             console.log(response);
+            questId = response.data[0].id;
             if (stand_in == "robbed") {
                 var questPrompt = {
                     "event": "Internally:",
@@ -274,10 +278,11 @@ var actionRouting = function() {
     } else {
         var promise = $http({
             method: "GET",
-            url: '/gameplay/action/' + stand_in + "_" + questDifficulty.toString()
+            url: '/gameplay/action/' + stand_in + "_" + questDifficulty.toString() + "_" + questId
         }).then(function(response) {
             console.log("GET Success!");
             console.log(response);
+            questId = response.data[0].id;
             var questPrompt = {
                 "event": "One More Thing! ",
                 "description": response.data[0].description,
@@ -301,10 +306,11 @@ var proposition = function() {
 var attemptSuccess = function() {
     eventHistory = [];
     console.log(stand_in);
+    console.log(questDifficulty.toString());
     if (stand_in == "illness" || stand_in == "lost" || stand_in == "robbed") {
         var promise = $http({
             method: "GET",
-            url: '/gameplay/success/' + stand_in + '_5'
+            url: '/gameplay/success/' + stand_in + "_" + questDifficulty.toString() + "_" + questId
         }).then(function(response) {
             console.log("GET Success!");
             console.log(response);
@@ -329,7 +335,7 @@ var attemptSuccess = function() {
     } else {
         var promise = $http({
             method: "GET",
-            url: '/gameplay/success/' + stand_in + "_" + questDifficulty.toString()
+            url: '/gameplay/success/' + stand_in + "_" + questDifficulty.toString() + "_" + questId
         }).then(function(response) {
             console.log("GET Success!");
             console.log(response);
@@ -379,6 +385,7 @@ var getInsults = function() {
 }
 
 var getFightQuote = function(success) {
+  console.log(stand_in);
     var promise = $http({
         method: "GET",
         url: '/gameplay/fight_success/' + stand_in + "_" + questDifficulty + success

@@ -168,8 +168,8 @@ router.get('/insults', function(req, res) {
 
 router.get('/fight_success/:id', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
-        var number = req.params.id.substring(req.params.id.length-2, req.params.id.length-1);
-        var idNumber = req.params.id.substring(req.params.id.length-1, req.params.id.length);
+        var number = req.params.id.substring(req.params.id.length - 2, req.params.id.length - 1);
+        var idNumber = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
         console.log(number);
         console.log(idNumber);
         if (err) {
@@ -193,25 +193,34 @@ router.get('/fight_success/:id', function(req, res) {
 
 router.get('/success/:id', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
-        var number = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
-        console.log(number);
-        var id = req.params.id.substring(0, req.params.id.length - 2);
+        var eventNumber = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
+        var tableNumber = req.params.id.substring(req.params.id.length - 3, req.params.id.length - 2);
+        console.log("eventNumber", eventNumber);
+        console.log("tableNumber", tableNumber);
+
+        var id = req.params.id.substring(0, req.params.id.length - 4);
         if (err) {
             console.log(err);
             res.sendStatus(500);
         }
-        if (number == 5) {
-            console.log("Number is 5");
-            number = '1';
-            randomNumber = 2;
+        if (id == "illness" || id == "lost" || id == "robbed") {
+          tableNumber = '1';
         } else {
-            randomNumber = number*2;
+            randomNumber = eventNumber * 2;
         }
         var chanceNumber = rn.coin();
         chanceNumber = parseInt(chanceNumber);
         randomNumber -= chanceNumber;
-        console.log("SELECT * FROM " + id + "_action_" + number + "_success WHERE " + id + "_action_" + number + "_success.id = " + randomNumber);
-        var standin = "SELECT * FROM " + id + "_action_" + number + "_success WHERE " + id + "_action_" + number + "_success.id = " + randomNumber;
+        console.log("tableNumber", tableNumber);
+        console.log("randomNumber", randomNumber);
+        console.log("chanceNumber", chanceNumber);
+
+        if(id + "_action_" + tableNumber + "_success" == "kidnapped_action_2_success"){
+          randomNumber = (randomNumber % 2) + 1;
+        }
+
+        console.log("SELECT * FROM " + id + "_action_" + tableNumber + "_success WHERE " + id + "_action_" + tableNumber + "_success.id = " + randomNumber);
+        var standin = "SELECT * FROM " + id + "_action_" + tableNumber + "_success WHERE " + id + "_action_" + tableNumber + "_success.id = " + randomNumber;
         client.query(standin,
             function(err, result) {
                 done();
@@ -227,23 +236,24 @@ router.get('/success/:id', function(req, res) {
 
 router.get('/action/:id', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
-        var number = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
-        var id = req.params.id.substring(0, req.params.id.length - 2);
-        console.log(number);
+      var eventNumber = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
+      var tableNumber = req.params.id.substring(req.params.id.length - 3, req.params.id.length - 2);
+      var id = req.params.id.substring(req.params.id, req.params.id.length - 4);
+        console.log(eventNumber);
+        console.log(tableNumber);
+        console.log(id);
+
         if (err) {
             console.log(err);
             res.sendStatus(500);
         }
-        if (number == 5) {
-            console.log("Number is 5");
-            number = '1';
-            randomNumber = '1';
-        } else {
-            randomNumber = number;
+        if (id == "illness" || id == "lost" || id == "robbed") {
+                tableNumber = '1';
         }
+        randomNumber = rn.randomnumber4();
         console.log(randomNumber);
-        console.log("SELECT * FROM " + id + "_action_" + number + " WHERE " + id + "_action_" + number + ".id = " + randomNumber)
-        client.query("SELECT * FROM " + id + "_action_" + number + " WHERE " + id + "_action_" + number + ".id = " + randomNumber,
+        console.log("SELECT * FROM " + id + "_action_" + tableNumber + " WHERE " + id + "_action_" + tableNumber + ".id = " + randomNumber)
+        client.query("SELECT * FROM " + id + "_action_" + tableNumber + " WHERE " + id + "_action_" + tableNumber + ".id = " + randomNumber,
             function(err, result) {
                 done();
                 console.log("Result", result);

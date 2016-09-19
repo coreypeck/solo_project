@@ -39,11 +39,23 @@ app.get('/', function(req, res){
 });
 
 io.on('connection', function(socket){
-  socket.on('chat message', function(msg){
-    io.emit('chat message', msg);
+  console.log("io connection running");
+  socket.on('chat message', function(data){
+    console.log(data);
+    io.emit('chat message', data);
+  });
+  socket.on('event', function(data){
+    console.log(data);
+    io.emit('event', data);
+  });
+  socket.on('building', function(data){
+    console.log(data);
+    io.emit('building', data);
+  });
+  socket.on('vote reset', function(data){
+    console.log(data);
+    io.emit('vote reset', data);
   });
 });
 
-http.listen(5000, function(){
-  console.log('listening on *:5000');
-});
+http.listen(5000);

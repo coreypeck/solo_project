@@ -46,35 +46,106 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     var wandoCount = 0;
     var metWando = false;
     var wandoIntro = "You follow the roads until you reach Wando's clearing. You see a small Wagon hooked up to two large Oxen. Wando looks to be an old man with mad scientist hair. Wando looks up from the book he was reading and regards you. You see in his gaze great wisdom, and more than a bit of insanity";
+
     function updateSuccessStatus() {
-      console.log($scope.submitSuccess);
-      $scope.submitSuccess = {'border': '5px solid green'};
-      $timeout(function(){
-        $scope.submitSuccess = {'border': '2px solid black'};
-      }, 5000);
+        $scope.submitSuccess = {
+            'border': '5px solid green'
+        };
+        $timeout(function() {
+            $scope.submitSuccess = {
+                'border': '2px solid black'
+            };
+        }, 5000);
     }
     //initial town generation
-    $scope.FamilyFactory.getUser().then(function(){
-      $scope.FamilyFactory.getNumber('unknown1').then(function(){
-        var index = $scope.FamilyFactory.grabNumber();
-        console.log(index);
-        $scope.userImage = $scope.FamilyFactory.grabImage(index - 1);
-        console.log($scope.userImage);
-      });
+    $scope.FamilyFactory.getUser().then(function() {
+        $scope.FamilyFactory.getNumber('unknown1').then(function() {
+            var index = $scope.FamilyFactory.grabNumber();
+            console.log(index);
+            $scope.userImage = $scope.FamilyFactory.grabImage(index - 1);
+            console.log($scope.userImage);
+        });
     });
     getTown();
-
 
     //The function that shows my local chat
 
     $scope.postChat = function() {
         socket.emit('chat message', $scope.chatText);
-        $scope.chatHistory.push($scope.chatText);
+        // $scope.chatHistory.push($scope.chatText);
+        updateScroll('chatHome');
         $scope.chatText = "";
+        return false;
+    }
+
+    socket.on('chat message', function(msg) {
+        console.log("recieving message");
+        $scope.chatHistory.push(msg);
+        console.log($scope.chatHistory);
+        $scope.$apply();
+    });
+
+    function sendEventToIo(data) {
+        socket.emit("event", data);
         updateScroll('chatHome');
         return false;
     }
 
+    function sendBuildingToIo(data) {
+        socket.emit("building", data);
+        updateScroll('chatHome');
+        return false;
+    }
+
+    function submitVote() {
+        var data = {
+            yes: yesVotes,
+            no: noVotes
+        };
+        socket.emit("vote", data);
+        hasVoted = true;
+        updateScroll('chatHome');
+        return false;
+    }
+    function resetVote(){
+      var data = {
+        yes: 0,
+        no: 0,
+        votingStatus: false,
+        voteStatus: false
+      }
+      socket.emit("vote reset", data);
+      updateScroll('chatHome');
+      return false;
+    }
+    socket.on('event', function(msg) {
+        $scope.eventHistory.push(msg);
+        console.log("msg", msg);
+        console.log(msg.description);
+        if (msg.description.substring(msg.description.length - 5, msg.description.length) == "Vote!") {
+            isVoting = true
+        }
+        console.log(msg.description.substring(msg.description.length - 5, msg.description.length));
+        console.log($scope.eventHistory);
+        $scope.$apply();
+    });
+    socket.on('building', function(msg) {
+        $scope.building = msg;
+        console.log($scope.eventHistory);
+        $scope.$apply();
+    });
+    socket.on('vote', function(msg) {
+        yesVotes += msg.yes;
+        noVotes += msg.no;
+        console.log($scope.eventHistory);
+        $scope.$apply();
+    });
+    socket.on("vote reset", function(data){
+      yesVotes = data.yes;
+      noVotes = data.no;
+      isVoting = data.votingStatus;
+      hasVoted = data.voteStatus;
+    });
     //This will bring focus to the bottom of a given ID...usually
 
     function updateScroll(id) {
@@ -85,7 +156,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     //the ajax for my town
 
     function getTown() {
-      console.log("getTown running");
+        console.log("getTown running");
         var buildingNumber = 0;
         townsVisited++;
         $http({
@@ -123,7 +194,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     "image": naratorImg
                 };
                 heardOfWando = true;
-                $scope.eventHistory.push(eventObject);
+                sendEventToIo(eventObject);
+                // $scope.eventHistory.push(eventObject);
             }
         }, function() {
             console.log("Get Error");
@@ -155,8 +227,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
     //This does an Ajax request to grab the Event name
 
     function getBuildings(buildingNumber) {
-      console.log("getBuildings");
-      console.log(buildingNumber);
+        console.log("getBuildings");
+        console.log(buildingNumber);
         $scope.buildings = [];
         var bName = "";
 
@@ -167,7 +239,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                 method: "GET",
                 url: '/gameplay/buildings'
             }).then(function(buildingName) {
-              console.log("Get Success");
+                    console.log("Get Success");
                     // var test = 'Wando';
                     // wandoCheck(test);
                     if (buildingName.data[0].description == "Guild") {
@@ -219,7 +291,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     hasVoted = true;
                     resetVariables();
                     updateSuccessStatus();
-                } else if ($scope.gameInput.substring(0, 2) == 'no' && hasVoted == false) {
+                } else if (checkNo.toLowerCase() == 'no' && hasVoted == false) {
                     noVotes++;
                     hasVoted = true;
                     resetVariables();
@@ -303,14 +375,16 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             if (metWando == false) {
                 metWando = true;
                 eventObject.description = wandoIntro;
-                $scope.eventHistory.push(eventObject);
+                sendEventToIo(eventObject);
+                // $scope.eventHistory.push(eventObject);
             } else {
                 $scope.FamilyFactory.getNumber().then(function() {
                     var wandoActionNumber = $scope.FamilyFactory.grabNumber();
                     $scope.FamilyFactory.getWandoAction(wandoActionNumber).then(function() {
                         var wandoAction = $scope.FamilyFactory.grabWandoAction();
                         eventObject.description = wandoAction;
-                        $scope.eventHistory.push(eventObject);
+                        sendEventToIo(eventObject);
+                        // $scope.eventHistory.push(eventObject);
                     });
                 });
             }
@@ -322,7 +396,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         } else {
             eventObject.event = "You have entered";
             eventObject.description = inBuilding.buildingName;
-            $scope.eventHistory.push(eventObject);
+            sendEventToIo(eventObject);
+            // $scope.eventHistory.push(eventObject);
             resetVariables();
             getFamilyMembers();
         }
@@ -339,7 +414,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         };
         eventObject.event = "You have left";
         eventObject.description = inBuilding.buildingName;
-        $scope.eventHistory.push(eventObject);
+        sendEventToIo(eventObject);
+        // $scope.eventHistory.push(eventObject);
         resetVariables();
         updateScroll('event_home');
     }
@@ -422,7 +498,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             "description": (holdingObjectArray[1].event + holdingObjectArray[1].description)
         };
         holdingObjectArray = [];
-        $scope.eventHistory.push(object);
+        sendEventToIo(eventObject);
+        // $scope.eventHistory.push(object);
         getEmotions(familyMembers);
         resetVariables();
     }
@@ -497,14 +574,16 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                                     "event": (holdingObjectArray[0].event + " " + holdingObjectArray[0].description),
                                     "description": (holdingObjectArray[1].event + " " + holdingObjectArray[1].description)
                                 };
-                                $scope.eventHistory.push(object);
+                                sendEventToIo(eventObject);
+                                // $scope.eventHistory.push(object);
                                 startFight();
                             } else {
                                 var object = {
                                     "event": (holdingObjectArray[0].event + " " + holdingObjectArray[0].description),
                                     "description": (holdingObjectArray[1].event + " " + holdingObjectArray[1].description + actionCall.event + actionCall.description)
                                 };
-                                $scope.eventHistory.push(object);
+                                sendEventToIo(eventObject);
+                                // $scope.eventHistory.push(object);
                                 var route = "help";
                                 startVote(route);
 
@@ -529,11 +608,13 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         if (routeCommand == "next town") {
             eventObject.event = "A player has voted to go to the " + routeCommand;
             eventObject.description = "Please enter Yes or No within 15s to cast your Vote!";
-            $scope.eventHistory.push(eventObject);
+            sendEventToIo(eventObject);
+            // $scope.eventHistory.push(eventObject);
             updateScroll('event_home');
             $timeout(function() {
                 if (yesVotes > noVotes) {
-                    isVoting = false;
+                  resetVote();
+                    // isVoting = false;
                     wandoCount = 0;
                     moveNewTown();
                 } else {
@@ -542,13 +623,11 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                         "description": "",
                         "image": naratorImg
                     };
-                    yesVotes = 0;
-                    noVotes = 0;
-                    isVoting = false;
-                    hasVoted = false;
+                    resetVote();
                     eventObject.event = "The vote ";
                     eventObject.description = "has failed.";
-                    $scope.eventHistory.push(eventObject);
+                    sendEventToIo(eventObject);
+                    // $scope.eventHistory.push(eventObject);
                     updateScroll('event_home');
                     resetVariables();
                 }
@@ -556,11 +635,12 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         } else if (routeCommand == 'help') {
             eventObject.event = "A citizen calls for aid! Will you aid them?";
             eventObject.description = "Please enter Yes or No within 15s to cast your Vote!";
-            $scope.eventHistory.push(eventObject);
+            sendEventToIo(eventObject);
+            // $scope.eventHistory.push(eventObject);
             updateScroll('event_home');
             $timeout(function() {
                 if (yesVotes > noVotes) {
-                    isVoting = false;
+                  resetVote();
                     console.log("Fine, I'll help!");
                     getStory();
                 } else {
@@ -569,13 +649,12 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                         "description": "",
                         "image": naratorImg
                     };
-                    yesVotes = 0;
-                    noVotes = 0;
-                    isVoting = false;
-                    hasVoted = false;
+                    resetVote();
+
                     eventObject.event = "The vote ";
                     eventObject.description = "has failed.";
-                    $scope.eventHistory.push(eventObject);
+                    sendEventToIo(eventObject);
+                    // $scope.eventHistory.push(eventObject);
                     showDismay();
                     updateScroll('event_home');
                     resetVariables();
@@ -590,14 +669,13 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             };
             eventObject.event = "A player wants to enter " + routeCommand.description;
             eventObject.description = "Please enter Yes or No within 15s to cast your Vote!";
-            $scope.eventHistory.push(eventObject);
+            sendEventToIo(eventObject);
+            // $scope.eventHistory.push(eventObject);
             updateScroll('event_home');
             $timeout(function() {
                 if (yesVotes > noVotes) {
-                    yesVotes = 0;
-                    noVotes = 0;
-                    isVoting = false;
-                    hasVoted = false;
+                  resetVote();
+
                     console.log("Alons-e!");
                     enterBuilding(routeCommand.description);
                 } else {
@@ -606,13 +684,12 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                         "description": "",
                         "image": naratorImg
                     };
-                    yesVotes = 0;
-                    noVotes = 0;
-                    isVoting = false;
-                    hasVoted = false;
+                    resetVote();
+
                     eventObject.event = "The vote ";
                     eventObject.description = "has failed.";
-                    $scope.eventHistory.push(eventObject);
+                    sendEventToIo(eventObject);
+                    // $scope.eventHistory.push(eventObject);
                     updateScroll('event_home');
                     resetVariables();
                 }
@@ -629,7 +706,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         };
         eventObject.event = "They look rather disappointed and, not so, kindly";
         eventObject.description = " show you the door. There is an audible click behind you as they lock it.";
-        $scope.eventHistory.push(eventObject);
+        sendEventToIo(eventObject);
+        // $scope.eventHistory.push(eventObject);
         updateScroll('event_home');
         leaveBuilding();
     }
@@ -646,7 +724,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         eventObject.event = "Now leaving: ";
         // eventObject.description = town.townName;
         eventObject.description = 'town';
-        $scope.eventHistory.push(eventObject);
+        sendEventToIo(eventObject);
+        // $scope.eventHistory.push(eventObject);
         $scope.buildings = [];
         getTown();
         $scope.gameInput = '';
@@ -661,7 +740,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         };
         eventObject.event = "You are thanked profusely and invited to stay for supper.";
         eventObject.description = " You politely decline. They thank you once move and you leave.";
-        $scope.eventHistory.push(eventObject);
+        sendEventToIo(eventObject);
+        // $scope.eventHistory.push(eventObject);
         completedQuests++;
         updateScroll('event_home');
         leaveBuilding();
@@ -682,7 +762,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             console.log(ajaxArray);
             eventObject.event = ajaxArray[0].event;
             eventObject.description = ajaxArray[0].description;
-            $scope.eventHistory.push(eventObject);
+            sendEventToIo(eventObject);
+            // $scope.eventHistory.push(eventObject);
             console.log("Action has been routing!");
             yesVotes = 0;
             noVotes = 0;
@@ -707,7 +788,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             if (eventObject.event == "Success: ") {
                 success = true;
             }
-            $scope.eventHistory.push(eventObject);
+            sendEventToIo(eventObject);
+            // $scope.eventHistory.push(eventObject);
             if (success == true) {
                 showGraditude();
             } else {
@@ -735,7 +817,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         $scope.fighting = true;
         eventObject.event = "Type 1, 2 or 3 ";
         eventObject.description = "to select your Comeback!";
-        $scope.eventHistory.push(eventObject);
+        sendEventToIo(eventObject);
+        // $scope.eventHistory.push(eventObject);
         getInsults();
     }
 
@@ -754,7 +837,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                 console.log(insultNum);
                 eventObject.event = insultsArray[insultNum].insult;
                 insultNum++;
-                $scope.eventHistory.push(eventObject);
+                sendEventToIo(eventObject);
+                // $scope.eventHistory.push(eventObject);
                 var choices = [{
                     number: '1: ',
                     comeback: insultsArray[0].comeback
@@ -772,7 +856,9 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                     };
                     choiceObject.event = choice.number;
                     choiceObject.description = choice.comeback;
-                    $scope.eventHistory.push(choiceObject);
+                    console.log(choiceObject);
+                    sendEventToIo(choiceObject);
+                    // $scope.eventHistory.push(choiceObject);
                     updateScroll('event_home');
                 });
                 updateScroll('event_home');
@@ -827,7 +913,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                         console.log(ajaxArray);
                         eventObject.event = ajaxArray[0].event;
                         eventObject.description = ajaxArray[0].description;
-                        $scope.eventHistory.push(eventObject);
+                        sendEventToIo(eventObject);
+                        // $scope.eventHistory.push(eventObject);
                         leaveBuilding();
                     });
                 }, 20000)
@@ -842,7 +929,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
                         ajaxArray = $scope.FamilyFactory.grabHistory();
                         eventObject.event = ajaxArray[1].event;
                         eventObject.description = ajaxArray[1].description;
-                        $scope.eventHistory.push(eventObject);
+                        sendEventToIo(eventObject);
+                        // $scope.eventHistory.push(eventObject);
                         leaveBuilding();
                     });
                 }, 5000)
@@ -854,12 +942,12 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         }
     }
     var buildingClick = -1;
-    $scope.fillWithBuilding = function(){
-      buildingClick++;
-      if(buildingClick >= $scope.buildings.length){
-        buildingClick=0;
-      }
-      $scope.simpleSelect = "Go " + $scope.buildings[buildingClick];
+    $scope.fillWithBuilding = function() {
+        buildingClick++;
+        if (buildingClick >= $scope.buildings.length) {
+            buildingClick = 0;
+        }
+        $scope.simpleSelect = "Go " + $scope.buildings[buildingClick];
     }
 }]);
 
@@ -868,5 +956,8 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
 //Finish Wando quests
 //Story intro (Superimposed DIV Probably)
 //Styling
-//UX Click to fill fields
 //completed quest counter?
+//update Building IO push
+//IO rooms, don't start until all players are in. This will help make sure the buildings match up
+//Make voting an io call. So other players can interact as well!
+//Maybe do a push and return each vote as it happens, push that to an array and then do a for loop iteration?
