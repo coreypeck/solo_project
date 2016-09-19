@@ -1,7 +1,7 @@
 var express = require("express");
 var app = express();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var server = require('http').createServer(app);
+var io = require('socket.io').listen(http);
 var bodyParser = require('body-parser');
 var path = require('path');
 
@@ -38,7 +38,7 @@ app.get('/', function(req, res){
   res.sendFile('/Users/coreypeck/Desktop/Solo Project/solo_project/server/public/views/index.html');
 });
 
-io.on('connection', function(socket){
+io.sockets.on('connection', function(socket){
   console.log("io connection running");
   socket.on('chat message', function(data){
     console.log(data);
@@ -58,4 +58,14 @@ io.on('connection', function(socket){
   });
 });
 
-http.listen(5000);
+function sessionCleanup() {
+    sessionStore.all(function(err, sessions) {
+        for (var i = 0; i < sessions.length; i++) {
+            sessionStore.get(sessions[i], function() {} );
+        }
+    });
+}
+
+setInterval(sessionCleanup, 5000);
+
+server.listen(process.env.PORT || 5000);

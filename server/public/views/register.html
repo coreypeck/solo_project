@@ -1,6 +1,7 @@
 <div id="loginForm">
     <h1 class="lead">Register User</h1>
     <h1 class="lead alert alert-danger" role="alert" ng-if="message != ''">{{message}}</h2>
+    <div id="loginStyle">
   <form ng-submit="registerUser()">
     <div>
         <label for="username">Username:</label>
@@ -10,14 +11,18 @@
         <label for="password">Password:</label>
         <input type="password" ng-model="user.password" />
     </div>
-    <div>
       <label for="image">Profile Image:</label>
+          <div class="buttonContainer">
       <button ng-click="adjustSelectionDown()"><img height="30" width="30" src="../imgs/left_arrow.png" ng-model="picture"/></button>
       <img ng-src='{{picture}}' />
       <button ng-click="adjustSelectionUp()"><img height="30" width="30" src="../imgs/right_arrow.png" ng-model="picture"/></button>
     </div>
-    <input class="btn btn-default" type="submit" name="submit" value="Register" />
+          <div class="buttonContainer">
+    <input class="btn btn-default button" type="submit" name="submit" value="Register" />
     <a href="#home">Cancel</a>
+  </div>
   </form>
+
+</div>
 
 </div>
