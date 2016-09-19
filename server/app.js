@@ -35,7 +35,7 @@ app.use('/gameplay', gameplay);
 app.use('/*', index);
 
 app.get('/', function(req, res){
-  res.sendFile('/Users/coreypeck/Desktop/Solo Project/solo_project/server/public/views/index.html');
+  res.sendFile('/solo_project/server/public/views/index.html');
 });
 
 io.sockets.on('connection', function(socket){
