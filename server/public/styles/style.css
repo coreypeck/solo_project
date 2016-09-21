@@ -147,8 +147,9 @@ form button {
   background-color: white;
 }
 #loginForm{
-  width: 900px;
-  margin: 0px;
+  background-color: BurlyWood;
+  width: 90%;
+  margin: 0 auto;
 }
 #gameHome{
   background-color: BurlyWood;
