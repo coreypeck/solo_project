@@ -24,3 +24,5 @@ Along the way you will meet Wando. He owns a cart and two Oxen. He also runs his
 
 Sprites were made by Sithjester. Their work can be found at: http://untamed.wild-refuge.net/rpgxp.php
 or just look up Sithjester online and they will be one of the first results.
+
+This project is in the process of moving over to Heroku, please stand by as I work out the bugs!
