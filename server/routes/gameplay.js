@@ -29,7 +29,7 @@ router.get('/', function(req, res) {
 
 //Gets the size of the town (Essentially, the number of buildings)
 
-router.get('/town', function(req, res) {
+router.post('/town', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
             console.log(err);
@@ -53,7 +53,7 @@ router.get('/town', function(req, res) {
 
 //Grabs my town buildings!
 
-router.get('/buildings', function(req, res) {
+router.post('/buildings', function(req, res) {
     console.log("Ajax request at buildings");
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
@@ -76,7 +76,7 @@ router.get('/buildings', function(req, res) {
     });
 });
 
-router.get('/guilds', function(req, res) {
+router.post('/guilds', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
             console.log(err);
@@ -99,7 +99,7 @@ router.get('/guilds', function(req, res) {
 
 //think as in: Family Member
 
-router.get('/members', function(req, res) {
+router.post('/members', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
             console.log(err);
@@ -123,7 +123,7 @@ router.get('/members', function(req, res) {
 
 //This is where emotions come from
 
-router.get('/emotions', function(req, res) {
+router.post('/emotions', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
             console.log(err);
@@ -145,7 +145,7 @@ router.get('/emotions', function(req, res) {
     });
 });
 
-router.get('/insults', function(req, res) {
+router.post('/insults', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         if (err) {
             console.log(err);
@@ -166,7 +166,7 @@ router.get('/insults', function(req, res) {
     });
 });
 
-router.get('/fight_success/:id', function(req, res) {
+router.post('/fight_success/:id', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         var number = req.params.id.substring(req.params.id.length - 2, req.params.id.length - 1);
         var idNumber = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
@@ -191,7 +191,7 @@ router.get('/fight_success/:id', function(req, res) {
     });
 });
 
-router.get('/success/:id', function(req, res) {
+router.post('/success/:id', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         var eventNumber = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
         var tableNumber = req.params.id.substring(req.params.id.length - 3, req.params.id.length - 2);
@@ -234,7 +234,7 @@ router.get('/success/:id', function(req, res) {
     });
 });
 
-router.get('/action/:id', function(req, res) {
+router.post('/action/:id', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
       var eventNumber = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
       var tableNumber = req.params.id.substring(req.params.id.length - 3, req.params.id.length - 2);
@@ -267,7 +267,7 @@ router.get('/action/:id', function(req, res) {
     });
 });
 
-router.get('/wando/:id', function(req, res) {
+router.post('/wando/:id', function(req, res) {
     pg.connect(connectionString, function(err, client, done) {
         var lessTen = req.params.id.substring(req.params.id.length - 1, req.params.id.length);
         var isTen = req.params.id.substring(req.params.id.length - 2, req.params.id.length);
@@ -301,7 +301,7 @@ router.get('/wando/:id', function(req, res) {
 
 //d for Dice!
 
-router.get('/d/:id', function(req, res) {
+router.post('/d/:id', function(req, res) {
     var id = req.params.id;
     var randomNumber = 0;
     var unknownCheck = id.substring(0, 7);
@@ -344,7 +344,7 @@ router.get('/d/:id', function(req, res) {
     res.send(randomNumber.toString());
 });
 
-router.get('/firstevent/:id', function(req, res) {
+router.post('/firstevent/:id', function(req, res) {
     var id = req.params.id;
     console.log("first event id: ", id);
     pg.connect(connectionString, function(err, client, done) {
@@ -395,7 +395,7 @@ router.get('/firstevent/:id', function(req, res) {
     });
 });
 
-router.get('/secondevent/:id', function(req, res) {
+router.post('/secondevent/:id', function(req, res) {
     var id = req.params.id;
     pg.connect(connectionString, function(err, client, done) {
         if (err) {

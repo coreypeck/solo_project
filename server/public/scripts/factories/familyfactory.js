@@ -25,7 +25,7 @@ myApp.factory('FamilyFactory', ['$http', function($http) {
     var questId = "";
 
     var getUser = function() {
-      var promise = $http.get('/user').then(function(response) {
+      var promise = $http.post('/user').then(function(response) {
             if (response.data) {
                 userName.username = response.data.username;
                 userName.image = response.data.image;
@@ -51,7 +51,7 @@ var questPromptEvent = function(relative) {
         });
     }
     var promise = $http({
-        method: "GET",
+        method: "POST",
         url: '/gameplay/firstevent/' + stand_in,
     }).then(function(response) {
         console.log("Get Success");
@@ -72,7 +72,7 @@ var questPromptEvent = function(relative) {
 
 var questPromptDescription = function(relative) {
     var promise = $http({
-        method: "GET",
+        method: "POST",
         url: '/gameplay/secondevent/' + stand_in,
     }).then(function(response) {
             var description = response.data[0].description;
@@ -113,7 +113,7 @@ var checkStandIn = function(stand_in, savePerson, response, description) {
             switch (response.data[0].id) {
                 case 2:
                     $http({
-                        method: "GET",
+                        method: "POST",
                         url: '/gameplay/secondevent/robbed',
                     }).then(function(response) {
                         des += response.data[0].description;
@@ -159,7 +159,7 @@ var checkStandIn = function(stand_in, savePerson, response, description) {
 var assignNumber = function(number) {
     familyNumber = undefined;
     var promise = $http({
-        method: "GET",
+        method: "POST",
         url: '/gameplay/d/' + number,
     }).then(function(response) {
         console.log("Get Success");
@@ -176,7 +176,7 @@ var numberOfMembers = function() {
     familyMembers = [];
     for (var i = 0; i < familyNumber; i++) {
         var promise = $http({
-            method: "GET",
+            method: "POST",
             url: '/gameplay/members',
         }).then(function(response) {
             console.log("getFamilyMembers Get Success");
@@ -197,7 +197,7 @@ var getEvent = function() {
         "image": ""
     };
     var promise = $http({
-        method: "GET",
+        method: "POST",
         url: '/gameplay',
     }).then(function(response) {
         console.log("Get Success");
@@ -219,7 +219,7 @@ var getEvent = function() {
 var getEmotion = function() {
     emotion = "";
     var promise = $http({
-        method: "GET",
+        method: "POST",
         url: '/gameplay/emotions',
     }).then(function(response) {
         console.log("Get Success");
@@ -232,7 +232,7 @@ var getEmotion = function() {
 
 var getGuildName = function() {
     var promise = $http({
-        method: "GET",
+        method: "POST",
         url: '/gameplay/guilds'
     }).then(function(gName) {
         guildName = gName.data[0].description;
@@ -250,10 +250,10 @@ var actionRouting = function() {
         console.log("Cool fight starts now!");
     } else if (stand_in == "illness" || stand_in == "lost" || stand_in == "robbed") {
         var promise = $http({
-            method: "GET",
+            method: "POST",
             url: '/gameplay/action/' + stand_in + "_" + questDifficulty.toString() + "_" + questId
         }).then(function(response) {
-            console.log("GET Success!");
+            console.log("POST Success!");
             console.log(response);
             questId = response.data[0].id;
             if (stand_in == "robbed") {
@@ -272,15 +272,15 @@ var actionRouting = function() {
                 eventHistory.push(questPrompt);
             }
         }, function() {
-            console.log("GET Error");
+            console.log("POST Error");
         });
         return promise;
     } else {
         var promise = $http({
-            method: "GET",
+            method: "POST",
             url: '/gameplay/action/' + stand_in + "_" + questDifficulty.toString() + "_" + questId
         }).then(function(response) {
-            console.log("GET Success!");
+            console.log("POST Success!");
             console.log(response);
             questId = response.data[0].id;
             var questPrompt = {
@@ -290,7 +290,7 @@ var actionRouting = function() {
             };
             eventHistory.push(questPrompt);
         }, function() {
-            console.log("GET Error");
+            console.log("POST Error");
         });
         return promise;
     }
@@ -309,10 +309,10 @@ var attemptSuccess = function() {
     console.log(questDifficulty.toString());
     if (stand_in == "illness" || stand_in == "lost" || stand_in == "robbed") {
         var promise = $http({
-            method: "GET",
+            method: "POST",
             url: '/gameplay/success/' + stand_in + "_" + questDifficulty.toString() + "_" + questId
         }).then(function(response) {
-            console.log("GET Success!");
+            console.log("POST Success!");
             console.log(response);
             if (response.data[0].id % 2 == 0) {
                 var questPrompt = {
@@ -329,15 +329,15 @@ var attemptSuccess = function() {
             }
             eventHistory.push(questPrompt);
         }, function() {
-            console.log("GET Error");
+            console.log("POST Error");
         });
         return promise;
     } else {
         var promise = $http({
-            method: "GET",
+            method: "POST",
             url: '/gameplay/success/' + stand_in + "_" + questDifficulty.toString() + "_" + questId
         }).then(function(response) {
-            console.log("GET Success!");
+            console.log("POST Success!");
             console.log(response);
             if (response.data[0].id % 2 == 0) {
                 var questPrompt = {
@@ -354,7 +354,7 @@ var attemptSuccess = function() {
             }
             eventHistory.push(questPrompt);
         }, function() {
-            console.log("GET Error");
+            console.log("POST Error");
         });
         return promise;
     }
@@ -365,7 +365,7 @@ var getInsults = function() {
     console.log(insults.length);
     for (var i = 0; i < 6; i++) {
         var promise = $http({
-            method: "GET",
+            method: "POST",
             url: '/gameplay/insults'
         }).then(function(response) {
             var repeats = 0;
@@ -387,10 +387,10 @@ var getInsults = function() {
 var getFightQuote = function(success) {
   console.log(stand_in);
     var promise = $http({
-        method: "GET",
+        method: "POST",
         url: '/gameplay/fight_success/' + stand_in + "_" + questDifficulty + success
     }).then(function(response) {
-        console.log("GET Success!");
+        console.log("POST Success!");
         console.log(response);
         if (response.data[0].id % 2 == 0) {
             var questPrompt = {
@@ -408,21 +408,21 @@ var getFightQuote = function(success) {
             eventHistory.push(questPrompt);
         }
     }, function() {
-        console.log("GET Error");
+        console.log("POST Error");
     });
     return promise;
 }
 
 var getWandoAction = function(number) {
     var promise = $http({
-        method: "GET",
+        method: "POST",
         url: '/gameplay/wando/' + number
     }).then(function(response) {
-        console.log("GET Success!");
+        console.log("POST Success!");
         console.log(response);
         wandoAction = response.data[0].description;
     }, function() {
-        console.log("GET Error");
+        console.log("POST Error");
     });
     return promise;
 }

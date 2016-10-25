@@ -107,17 +107,23 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         updateScroll('chatHome');
         return false;
     }
-    function resetVote(){
-      var data = {
-        yes: 0,
-        no: 0,
-        votingStatus: false,
-        voteStatus: false
-      }
-      socket.emit("vote reset", data);
-      updateScroll('chatHome');
-      return false;
+
+    function resetVote() {
+        var data = {
+            yes: 0,
+            no: 0,
+            votingStatus: false,
+            voteStatus: false
+        }
+        socket.emit("vote reset", data);
+        updateScroll('chatHome');
+        return false;
     }
+    var el = document.getElementById('server-time');
+
+    socket.on('time', function(timeString) {
+        el.innerHTML = 'Server time: ' + timeString;
+    });
     socket.on('event', function(msg) {
         $scope.eventHistory.push(msg);
         console.log("msg", msg);
@@ -140,11 +146,11 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
         console.log($scope.eventHistory);
         $scope.$apply();
     });
-    socket.on("vote reset", function(data){
-      yesVotes = data.yes;
-      noVotes = data.no;
-      isVoting = data.votingStatus;
-      hasVoted = data.voteStatus;
+    socket.on("vote reset", function(data) {
+        yesVotes = data.yes;
+        noVotes = data.no;
+        isVoting = data.votingStatus;
+        hasVoted = data.voteStatus;
     });
     //This will bring focus to the bottom of a given ID...usually
 
@@ -613,7 +619,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             updateScroll('event_home');
             $timeout(function() {
                 if (yesVotes > noVotes) {
-                  resetVote();
+                    resetVote();
                     // isVoting = false;
                     wandoCount = 0;
                     moveNewTown();
@@ -640,7 +646,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             updateScroll('event_home');
             $timeout(function() {
                 if (yesVotes > noVotes) {
-                  resetVote();
+                    resetVote();
                     console.log("Fine, I'll help!");
                     getStory();
                 } else {
@@ -674,7 +680,7 @@ myApp.controller("indexController", ["$scope", "$http", "$timeout", "FamilyFacto
             updateScroll('event_home');
             $timeout(function() {
                 if (yesVotes > noVotes) {
-                  resetVote();
+                    resetVote();
 
                     console.log("Alons-e!");
                     enterBuilding(routeCommand.description);
